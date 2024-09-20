@@ -1,0 +1,106 @@
+﻿@page "/projects/{Id:long}"
+
+@attribute [Authorize]
+
+@using System.Text.Json
+@using Cointributors.Data
+@using Cointributors.Web.Components.Account
+@using Microsoft.AspNetCore.Authorization
+@using Octokit
+
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject DataContext DataContext
+
+<h1>Allocations</h1>
+
+
+<p>Choose your users/projects allocations.</p>
+
+
+@if (AllocationForm == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <EditForm Model="AllocationForm" FormName="create-allocations" OnSubmit="@CreateAllocations" method="post">
+        <table class="table">
+            <thead>
+            <tr>
+                <th>User</th>
+                <th>Allocation</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for (var i = 0; i < AllocationForm.UserAllocations.Count; i++)
+            {
+                <tr>
+                    <td>@AllocationForm.UserAllocations[i].User</td>
+                    <td>
+                        <input name="AllocationForm.UserAllocations[@(i)].User" value="@AllocationForm.UserAllocations[i].User" type="hidden" />
+                        <input name="AllocationForm.UserAllocations[@(i)].Allocation" value="@AllocationForm.UserAllocations[i].Allocation" />
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary">Create</button>
+    </EditForm>
+
+}
+
+
+@code {
+
+    public class UserAllocation
+    {
+        public string User { get; set; }
+        public int Allocation { get; set; }
+    }
+
+    public class Allocation
+    {
+        public List<UserAllocation>? UserAllocations { get; set; }
+    }
+
+    [Parameter]
+    public long Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public Allocation? AllocationForm { get; set; }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private GitHubClient gitHubClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
+
+        gitHubClient = new GitHubClient(new ProductHeaderValue("cointributors"))
+            {
+                Credentials = new Credentials(accessToken)
+            };
+
+        var contributors = await gitHubClient.Repository.Statistics.GetContributors(Id);
+
+        AllocationForm ??= new Allocation
+            {
+                UserAllocations = contributors.Select(c => new UserAllocation
+                {
+                    User = c.Author.Login,
+                    Allocation = 0
+                }).ToList()
+            };
+
+        RedirectManager.RedirectTo($"projects/{Id}/deploy");
+    }
+
+    private async Task CreateAllocations()
+    {
+        await gitHubClient.Repository.Content.CreateFile(Id, "cointributors.json", new CreateFileRequest("Adding Cointributors", JsonSerializer.Serialize(AllocationForm)));
+    }
+}

@@ -1,0 +1,25 @@
+﻿@page "/projects/{Id:long}/deploy"
+
+@attribute [Authorize]
+
+@using System.Text.Json
+@using Cointributors.Data
+@using Cointributors.Web.Components.Account
+@using Microsoft.AspNetCore.Authorization
+@using Octokit
+
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject DataContext DataContext
+
+<h1>Deployment</h1>
+
+<p>Deploy your smart contract.</p>
+
+
+@code {
+
+    [Parameter]
+    public long Id { get; set; }
+
+}

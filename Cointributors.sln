@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.Data", "Coint
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.Playground", "Cointributors.Playground\Cointributors.Playground.csproj", "{A11CED0D-274B-4D6E-B015-71B74349C3C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cointributors.Data.Models", "Cointributors.Data.Models\Cointributors.Data.Models.csproj", "{E74B4E2A-674E-4DDB-809C-B5A01BDD5FBE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.Data.Models", "Cointributors.Data.Models\Cointributors.Data.Models.csproj", "{E74B4E2A-674E-4DDB-809C-B5A01BDD5FBE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

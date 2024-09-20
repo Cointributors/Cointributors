@@ -35,7 +35,10 @@ public class Program
                 options.ClientId = builder.Configuration.GetValue<string>("Authentication:GitHub:ClientId")!;
                 options.ClientSecret = builder.Configuration.GetValue<string>("Authentication:GitHub:ClientSecret")!;
 
+                options.Scope.Add("read:user");
+                options.Scope.Add("user:email");
                 options.Scope.Add("repo");
+                options.Scope.Add("gist");
 
                 options.SaveTokens = true;
             })

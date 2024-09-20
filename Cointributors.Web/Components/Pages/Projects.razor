@@ -1,0 +1,71 @@
+﻿@page "/projects"
+
+@attribute [Authorize]
+
+@using Cointributors.Data
+@using Cointributors.Web.Components.Account
+@using Microsoft.AspNetCore.Authorization
+@using Octokit
+
+@inject IdentityUserAccessor UserAccessor
+@inject DataContext DataContext
+
+<h1>Repositories</h1>
+
+<p>Select the repositories you are with the best cointributors.</p>
+
+
+@if (repositories == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+                <th>I</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var repository in repositories)
+            {
+                <tr>
+                    <td>@repository.Name</td>
+                    <td>@repository.Visibility</td>
+                    <td>@repository.FullName</td>
+                    <td>@repository.Url</td>
+                    <td>
+                        <a href="/projects/@repository.Id">Select</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private GitHubClient gitHubClient;
+
+    private IReadOnlyList<Repository> repositories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
+
+        gitHubClient = new GitHubClient(new ProductHeaderValue("cointributors"))
+            {
+                Credentials = new Credentials(accessToken)
+            };
+
+        repositories = await gitHubClient.Repository.GetAllForCurrent();
+    }
+}
