@@ -22,4 +22,18 @@
     [Parameter]
     public long Id { get; set; }
 
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private GitHubClient gitHubClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
+
+        gitHubClient = new GitHubClient(new ProductHeaderValue("cointributors"))
+        {
+            Credentials = new Credentials(accessToken)
+        };
+    }
 }

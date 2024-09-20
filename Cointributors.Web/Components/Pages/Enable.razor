@@ -1,0 +1,80 @@
+﻿@page "/add-address-gist"
+
+@attribute [Authorize]
+
+@using Cointributors.Data
+@using Microsoft.AspNetCore.Authorization
+@using Cointributors.Web.Client.Pages
+@using Cointributors.Web.Components.Account
+@using Octokit
+
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject DataContext DataContext
+
+@if (AddressForm == null)
+{
+
+}
+else
+{
+    <EditForm Model="AddressForm" FormName="add-address-gist" OnSubmit="@AddAddress" method="post">
+        <DepositAddress></DepositAddress>
+        <button type="submit" class="btn btn-primary">Create</button>
+    </EditForm>
+}
+
+
+@code {
+
+    public class AddressData
+    {
+        public string Address { get; set; }
+    }
+
+    [SupplyParameterFromForm]
+    public AddressData? AddressForm { get; set; }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private GitHubClient gitHubClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
+
+        gitHubClient = new GitHubClient(new ProductHeaderValue("cointributors"))
+            {
+                Credentials = new Credentials(accessToken)
+            };
+
+        var gists = await gitHubClient.Gist.GetAll();
+
+        var cointributorsGist = gists.SingleOrDefault(g => g.Description == "My Cointributors Address");
+
+        if (cointributorsGist != null)
+        {
+            var address = await gitHubClient.Gist.Get(cointributorsGist.Id);
+
+            ;
+        }
+
+        AddressForm ??= new AddressData();
+    }
+
+    private async Task AddAddress()
+    {
+        await gitHubClient.Gist.Create(new NewGist
+        {
+            Description = "My Cointributors Address",
+            Public = true,
+            Files =
+            {
+                { "Address", AddressForm!.Address }
+            }
+        });
+
+        RedirectManager.RedirectToCurrentPage();
+    }
+}

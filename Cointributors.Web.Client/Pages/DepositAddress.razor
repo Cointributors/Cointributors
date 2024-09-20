@@ -1,0 +1,95 @@
+﻿@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
+
+@using System.Security.Claims
+@implements IDisposable;
+@inject IJSRuntime jsRuntime;
+@inject SelectedEthereumHostProviderService selectedHostProviderService
+@inject NavigationManager _navigationManager
+@inject AuthenticationStateProvider _siweAuthenticationStateProvider;
+
+<AuthorizeView Roles="EthereumConnected">
+    <Authorized>
+        <div>
+            @selectedAccount
+            <input name="AddressForm.Address" value="@selectedAccount" type="hidden" />
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div>
+            Please connect to Ethereum !
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+    [CascadingParameter]
+    public Task<AuthenticationState?> AuthenticationState { get; set; }
+
+    private bool ethereumAvailable;
+    private string selectedAccount;
+    private long selectedChainId;
+    private string userName;
+
+    IEthereumHostProvider ethereumHostProvider;
+
+    protected override void OnInitialized()
+    {
+        //metamask is selected
+        ethereumHostProvider = selectedHostProviderService.SelectedHost;
+        ethereumHostProvider.SelectedAccountChanged += OnSelectedAccountChanged;
+        ethereumHostProvider.NetworkChanged += OnNetworkChanged;
+        ethereumHostProvider.EnabledChanged += OnEnabledChanged;
+
+    }
+
+    public void Dispose()
+    {
+        ethereumHostProvider.SelectedAccountChanged -= OnSelectedAccountChanged;
+        ethereumHostProvider.NetworkChanged -= OnNetworkChanged;
+        ethereumHostProvider.EnabledChanged -= OnEnabledChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ethereumAvailable = await ethereumHostProvider.CheckProviderAvailabilityAsync();
+        if (ethereumAvailable)
+        {
+            selectedAccount = await ethereumHostProvider.GetProviderSelectedAccountAsync();
+        }
+
+        var authState = await AuthenticationState;
+        if (authState != null)
+        {
+            userName = authState.User.FindFirst(c => c.Type.Contains(ClaimTypes.NameIdentifier))?.Value;
+        }
+    }
+
+    private async Task OnSelectedAccountChanged(string account)
+    {
+        selectedAccount = account;
+        StateHasChanged();
+    }
+
+    private async Task OnNetworkChanged(long chainId)
+    {
+        selectedChainId = chainId;
+        StateHasChanged();
+    }
+
+    private async Task OnEnabledChanged(bool enabled)
+    {
+        if (enabled)
+        {
+            await GetChainId();
+            StateHasChanged();
+        }
+    }
+
+    private async Task GetChainId()
+    {
+        var web3 = await ethereumHostProvider.GetWeb3Async();
+        var chainId = await web3.Eth.ChainId.SendRequestAsync();
+        selectedChainId = (long)chainId.Value;
+    }
+}

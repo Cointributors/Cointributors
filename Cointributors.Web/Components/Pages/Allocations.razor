@@ -27,22 +27,30 @@ else
     <EditForm Model="AllocationForm" FormName="create-allocations" OnSubmit="@CreateAllocations" method="post">
         <table class="table">
             <thead>
-            <tr>
-                <th>User</th>
-                <th>Allocation</th>
-            </tr>
+                <tr>
+                    <th>User</th>
+                    <th>Allocation</th>
+                </tr>
             </thead>
             <tbody>
-            @for (var i = 0; i < AllocationForm.UserAllocations.Count; i++)
-            {
-                <tr>
-                    <td>@AllocationForm.UserAllocations[i].User</td>
-                    <td>
-                        <input name="AllocationForm.UserAllocations[@(i)].User" value="@AllocationForm.UserAllocations[i].User" type="hidden" />
-                        <input name="AllocationForm.UserAllocations[@(i)].Allocation" value="@AllocationForm.UserAllocations[i].Allocation" />
-                    </td>
-                </tr>
-            }
+                @for (var i = 0; i < AllocationForm.UserAllocations.Count; i++)
+                {
+                    <tr>
+                        <td>@AllocationForm.UserAllocations[i].User</td>
+                        <td>
+                            <input name="AllocationForm.UserAllocations[@(i)].User" value="@AllocationForm.UserAllocations[i].User" type="hidden" />
+                            <input name="AllocationForm.UserAllocations[@(i)].HasCointributorsAddress" value="@AllocationForm.UserAllocations[i].HasCointributorsAddress" type="hidden" />
+                            @if (AllocationForm.UserAllocations[i].HasCointributorsAddress)
+                            {
+                                <input name="AllocationForm.UserAllocations[@(i)].Allocation" value="@AllocationForm.UserAllocations[i].Allocation" />
+                            }
+                            else
+                            {
+                                <div>Add cointributors address</div>
+                            }
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
 
@@ -57,19 +65,20 @@ else
     public class UserAllocation
     {
         public string User { get; set; }
+        public bool HasCointributorsAddress { get; set; }
         public int Allocation { get; set; }
     }
 
-    public class Allocation
+    public class AllocationData
     {
-        public List<UserAllocation>? UserAllocations { get; set; }
+        public List<UserAllocation> UserAllocations { get; set; }
     }
 
     [Parameter]
     public long Id { get; set; }
 
     [SupplyParameterFromForm]
-    public Allocation? AllocationForm { get; set; }
+    public AllocationData? AllocationForm { get; set; }
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -87,20 +96,33 @@ else
 
         var contributors = await gitHubClient.Repository.Statistics.GetContributors(Id);
 
-        AllocationForm ??= new Allocation
-            {
-                UserAllocations = contributors.Select(c => new UserAllocation
-                {
-                    User = c.Author.Login,
-                    Allocation = 0
-                }).ToList()
-            };
+        if (AllocationForm == null)
+        {
+            var userAllocations = new List<UserAllocation>();
 
-        RedirectManager.RedirectTo($"projects/{Id}/deploy");
+            foreach (var contributor in contributors)
+            {
+                var gists = await gitHubClient.Gist.GetAllForUser(contributor.Author.Login);
+
+                userAllocations.Add(new UserAllocation
+                    {
+                        User = contributor.Author.Login,
+                        HasCointributorsAddress = gists.FirstOrDefault(g => g.Description == "My Cointributors Address") != null,
+                        Allocation = 0
+                    });
+            }
+
+            AllocationForm ??= new AllocationData
+                {
+                    UserAllocations = userAllocations
+                };
+        }
     }
 
     private async Task CreateAllocations()
     {
         await gitHubClient.Repository.Content.CreateFile(Id, "cointributors.json", new CreateFileRequest("Adding Cointributors", JsonSerializer.Serialize(AllocationForm)));
+
+        RedirectManager.RedirectTo($"projects/{Id}/deploy");
     }
 }

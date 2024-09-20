@@ -5,6 +5,9 @@ using Cointributors.Web.Components.Account;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Nethereum.Metamask;
+using Nethereum.Metamask.Blazor;
+using Nethereum.UI;
 
 namespace Cointributors.Web;
 
@@ -68,6 +71,19 @@ public class Program
             .AddDefaultTokenProviders();
 
         builder.Services.AddSingleton<IEmailSender<User>, IdentityNoOpEmailSender>();
+
+        builder.Services.AddScoped<IMetamaskInterop, MetamaskBlazorInterop>();
+        builder.Services.AddScoped<MetamaskHostProvider>();
+        //Add metamask as the selected ethereum host provider
+        builder.Services.AddScoped(services =>
+        {
+            var metamaskHostProvider = services.GetService<MetamaskHostProvider>();
+            var selectedHostProvider = new SelectedEthereumHostProviderService();
+            selectedHostProvider.SetSelectedEthereumHostProvider(metamaskHostProvider);
+            return selectedHostProvider;
+        });
+
+        builder.Services.AddScoped<IEthereumHostProvider, MetamaskHostProvider>();
 
         var app = builder.Build();
 
