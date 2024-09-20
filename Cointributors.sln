@@ -3,13 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.Web", "Cointributors.Web\Cointributors.Web\Cointributors.Web.csproj", "{72F44782-A692-4BBE-B943-44FF2E69FA28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.Web", "Cointributors.Web\Cointributors.Web.csproj", "{72F44782-A692-4BBE-B943-44FF2E69FA28}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.Web.Client", "Cointributors.Web\Cointributors.Web.Client\Cointributors.Web.Client.csproj", "{34CE7B71-D70A-465A-B0D6-70BE3CDD0643}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.Web.Client", "Cointributors.Web.Client\Cointributors.Web.Client.csproj", "{34CE7B71-D70A-465A-B0D6-70BE3CDD0643}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cointributors.AppHost", "Cointributors.AppHost\Cointributors.AppHost.csproj", "{0805EFF3-2417-4A31-9E52-759181B10F62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.AppHost", "Cointributors.AppHost\Cointributors.AppHost.csproj", "{0805EFF3-2417-4A31-9E52-759181B10F62}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.ServiceDefaults", "Cointributors.ServiceDefaults\Cointributors.ServiceDefaults.csproj", "{4DB5B773-48F4-40FF-9FD4-5BAFA5951F4E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.Data", "Cointributors.Data\Cointributors.Data.csproj", "{A365786E-0F8A-4802-B332-E32CA78D2A8C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cointributors.Playground", "Cointributors.Playground\Cointributors.Playground.csproj", "{A11CED0D-274B-4D6E-B015-71B74349C3C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cointributors.Data.Models", "Cointributors.Data.Models\Cointributors.Data.Models.csproj", "{E74B4E2A-674E-4DDB-809C-B5A01BDD5FBE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +39,18 @@ Global
 		{4DB5B773-48F4-40FF-9FD4-5BAFA5951F4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4DB5B773-48F4-40FF-9FD4-5BAFA5951F4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4DB5B773-48F4-40FF-9FD4-5BAFA5951F4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A365786E-0F8A-4802-B332-E32CA78D2A8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A365786E-0F8A-4802-B332-E32CA78D2A8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A365786E-0F8A-4802-B332-E32CA78D2A8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A365786E-0F8A-4802-B332-E32CA78D2A8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A11CED0D-274B-4D6E-B015-71B74349C3C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A11CED0D-274B-4D6E-B015-71B74349C3C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A11CED0D-274B-4D6E-B015-71B74349C3C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A11CED0D-274B-4D6E-B015-71B74349C3C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E74B4E2A-674E-4DDB-809C-B5A01BDD5FBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E74B4E2A-674E-4DDB-809C-B5A01BDD5FBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E74B4E2A-674E-4DDB-809C-B5A01BDD5FBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E74B4E2A-674E-4DDB-809C-B5A01BDD5FBE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

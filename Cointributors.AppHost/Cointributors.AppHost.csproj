@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Cointributors.Web\Cointributors.Web\Cointributors.Web.csproj" />
+    <ProjectReference Include="..\Cointributors.Web\Cointributors.Web.csproj" />
   </ItemGroup>
 
 </Project>
