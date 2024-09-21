@@ -11,17 +11,30 @@
 
 <AuthorizeView Roles="EthereumConnected">
     <Authorized>
-        <div>
-            Ethereum connected!
-        </div>
-        <button @onclick="@Deploy" class="btn btn-primary">Deploy</button>
-        <div>
-            @contractAddress
-        </div>
+        <input name="AddressForm.Address" value="@contractAddress" type="hidden" />
+        @if (contractAddress == null)
+        {
+            <div class="d-grid gap-2 mt-4 d-md-flex justify-content-md-end">
+                <a @onclick="@Deploy" class="btn btn-dark">Deploy that Contract!</a>
+            </div>
+        }
+        else
+        {
+            <p>
+                Awesome, the Cointribution contract has been deployed at <span class="fw-bold">@contractAddress</span>
+            </p>
+            <p>
+                The last step is to add a badge to your repo so you can receive Cointributions
+            </p>
+            <div class="d-grid gap-2 mt-4 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-dark">Start the Cointributions Flowing!</button>
+            </div>
+        }
+
     </Authorized>
     <NotAuthorized>
         <div>
-            Please connect to Ethereum!
+            Please <span class="fw-bold">connect MetaMask</span> to deploy your contract
         </div>
     </NotAuthorized>
 </AuthorizeView>
@@ -126,6 +139,8 @@
                 .SendRequestAndWaitForReceiptAsync(deployment);
 
             contractAddress = transactionReceipt.ContractAddress;
+
+
         }
     }
 }

@@ -16,22 +16,42 @@
 
 <PageTitle>Deployment</PageTitle>
 
-<h1>Deployment</h1>
+<div class="container-sm coin-small">
+    <h1>Deployment</h1>
 
-<p>Deploy your smart contract.</p>
+    <p>Deploy your smart contract.</p>
+    
+    @if (AddressForm == null)
+    {
 
-<DeployContract CointributorsData="_cointributorsData"></DeployContract>
+    }
+    else
+    {
+        <EditForm Model="AddressForm" FormName="deploy-contract" OnSubmit="@AddAddress" method="post">
+            <DeployContract CointributorsData="_cointributorsData"></DeployContract>
+        </EditForm>
+    }
+</div>
 
 @code {
 
     [Parameter]
     public long Id { get; set; }
 
+    public class AddressData
+    {
+        public string Address { get; set; }
+    }
+
+    [SupplyParameterFromForm]
+    public AddressData? AddressForm { get; set; }
+
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
     private GitHubClient gitHubClient;
 
+    private string cointributorsSha;
     private CointributorsData? _cointributorsData;
 
     protected override async Task OnInitializedAsync()
@@ -45,8 +65,24 @@
 
         var repository = await gitHubClient.Repository.Get(Id);
 
+        var contents = await gitHubClient.Repository.Content.GetAllContents(Id);
+
+        cointributorsSha = contents.Single(c => c.Name == "cointributors.json").Sha;
+
         var cointributorsBytes = await gitHubClient.Repository.Content.GetRawContent(repository.Owner.Login, repository.Name, "cointributors.json");
 
         _cointributorsData = JsonSerializer.Deserialize<CointributorsData>(cointributorsBytes);
+
+        AddressForm ??= new AddressData();
+    }
+
+    private async Task AddAddress()
+    {
+        _cointributorsData.Address = AddressForm.Address;
+
+        await gitHubClient.Repository.Content.UpdateFile(Id, "cointributors.json",
+            new UpdateFileRequest("Updating Cointributors", JsonSerializer.Serialize(_cointributorsData), cointributorsSha));
+
+        RedirectManager.RedirectTo($"repositories/{Id}/deployed");
     }
 }
