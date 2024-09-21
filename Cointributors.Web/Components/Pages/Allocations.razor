@@ -8,6 +8,7 @@
 @using Cointributors.Web.Client.Data
 @using Cointributors.Web.Components.Account
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
 @using Octokit
 
 @inject IdentityUserAccessor UserAccessor
@@ -133,6 +134,8 @@
 
         if (AllocationsForm == null)
         {
+            var ourWorldIdLogins = await DataContext.UserLogins.Where(l => l.LoginProvider == "WorldId").ToListAsync();
+
             var repository = await gitHubClient.Repository.Get(Id);
 
             var contributors = await gitHubClient.Repository.Statistics.GetContributors(Id);
@@ -150,14 +153,28 @@
                 {
                     cointributorsGist = await gitHubClient.Gist.Get(cointributorsGist.Id);
 
-                    allocations.Add(new AllocationData
-                        {
-                            Destination = contributor.Author.Login,
-                            Type = DestinationType.User,
-                            AvatarUrl = contributor.Author.AvatarUrl,
-                            Address = cointributorsGist.Files.FirstOrDefault().Value.Content,
-                            Allocation = 0
-                        });
+                    if (cointributorsGist.Files.TryGetValue("WorldId", out var worldIdFile) && ourWorldIdLogins.Any(l => l.ProviderKey == worldIdFile.Content))
+                    {
+                        allocations.Add(new AllocationData
+                            {
+                                Destination = contributor.Author.Login,
+                                Type = DestinationType.User,
+                                AvatarUrl = contributor.Author.AvatarUrl,
+                                Address = cointributorsGist.Files.FirstOrDefault(f => f.Key == "Address").Value.Content,
+                                Allocation = 0
+                            });
+                    }
+                    else
+                    {
+                        requiredGistAllocations.Add(new AllocationData
+                            {
+                                Destination = contributor.Author.Login,
+                                Type = DestinationType.User,
+                                AvatarUrl = contributor.Author.AvatarUrl,
+                                Address = null,
+                                Allocation = 0
+                            });
+                    }
                 }
                 else
                 {

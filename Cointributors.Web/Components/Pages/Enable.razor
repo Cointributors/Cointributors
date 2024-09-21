@@ -108,9 +108,9 @@
                 cointributorsGistUrl = cointributorsGist.HtmlUrl;
 
                 AddressForm ??= new AddressData
-                {
-                    Address = cointributorsGist.Files.FirstOrDefault().Value.Content
-                };
+                    {
+                        Address = cointributorsGist.Files.FirstOrDefault(f => f.Key == "Address").Value.Content
+                    };
             }
             else
             {

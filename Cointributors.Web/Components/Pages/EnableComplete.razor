@@ -66,7 +66,7 @@
             cointributorsGist = await gitHubClient.Gist.Get(cointributorsGist.Id);
 
             cointributorsGistUrl = cointributorsGist.HtmlUrl;
-            cointributorsAddress = cointributorsGist.Files.FirstOrDefault().Value.Content;
+            cointributorsAddress = cointributorsGist.Files.FirstOrDefault(f => f.Key == "Address").Value.Content;
         }
         else
         {
