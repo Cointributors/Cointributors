@@ -3,6 +3,7 @@
 @using System.Diagnostics
 @using System.Numerics
 @using Cointributors.Web.Client.Contract.CointributionSplitter
+@using Cointributors.Web.Client.Contract.Token
 @using Nethereum.Contracts.Standards.ERC20
 @implements IDisposable
 @inject IJSRuntime jsRuntime
@@ -27,6 +28,7 @@
 
             <a @onclick="@Contribute" class="btn btn-dark">Donate</a>
         </div>
+
         @if (!string.IsNullOrEmpty(transactionHash))
         {
             <p>
@@ -53,7 +55,7 @@
     IEthereumHostProvider ethereumHostProvider;
 
     private decimal donationAmount;
-    private string selectedTokenAddress;
+    private string selectedTokenAddress = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
     private string transactionHash;
     private string errorMessage;
 
@@ -143,6 +145,15 @@
         errorMessage = null;
 
         var web3 = await ethereumHostProvider.GetWeb3Async();
+
+        var tokenService = new TokenService(web3, selectedTokenAddress);
+
+        var selectedAccountHasAllowance = await tokenService.AllowanceQueryAsync(selectedAccount, ContractAddress) > 0;
+
+        if (!selectedAccountHasAllowance)
+        {
+            var transactionReceipt = await tokenService.IncreaseAllowanceRequestAndWaitForReceiptAsync(ContractAddress, 30_000_000);
+        }
 
         var cointributionSplitterService = new CointributionSplitterService(web3, ContractAddress);
 
