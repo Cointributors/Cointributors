@@ -66,9 +66,9 @@
     private List<TokenInfo> tokenList =
     [
         new TokenInfo { Symbol = "USDT", Address = "0xdac17f958d2ee523a2206206994597c13d831ec7" },
-    new TokenInfo { Symbol = "USDC", Address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" },
-    new TokenInfo { Symbol = "WETH", Address = "0xC02aaA39b223FE8D0A0e6C628489f4e40b3D30b" },
-    new TokenInfo { Symbol = "LINK", Address = "0x514910771af9ca656af840dff83e8264ecf986ca" }
+        new TokenInfo { Symbol = "USDC", Address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" },
+        new TokenInfo { Symbol = "WETH", Address = "0xC02aaA39b223FE8D0A0e6C628489f4e40b3D30b" },
+        new TokenInfo { Symbol = "LINK", Address = "0x514910771af9ca656af840dff83e8264ecf986ca" }
     ];
 
     [Parameter]
@@ -132,11 +132,6 @@
     {
     }
 
-    static BigInteger ConvertToWei(decimal amount)
-    {
-        return (BigInteger)(amount * 1_000_000_000_000_000_000m);
-    }
-
     protected async Task Contribute()
     {
         if (donationAmount <= 0)
@@ -159,12 +154,7 @@
 
         try
         {
-            var donationAmountWei = ConvertToWei(donationAmount);
-
-            Console.WriteLine($"ContractAddress: {ContractAddress}");
-            Console.WriteLine($"Selected Token Address: {selectedTokenAddress}");
-            Console.WriteLine($"Donation Amount: {donationAmount}");
-            Console.WriteLine($"Donation Amount (in Wei): {donationAmountWei}");
+            var donationAmountWei = (BigInteger)(donationAmount * 1_000_000_000_000_000_000m);
 
             var transactionReceipt = await cointributionSplitterService.DonateRequestAndWaitForReceiptAsync(donationAmountWei, "0x779877A7B0D9E8603169DdbD7836e478b4624789");
 

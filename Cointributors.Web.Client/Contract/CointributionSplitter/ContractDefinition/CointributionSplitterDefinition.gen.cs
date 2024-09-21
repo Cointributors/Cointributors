@@ -28,19 +28,6 @@ namespace Cointributors.Web.Client.Contract.CointributionSplitter.ContractDefini
         public virtual List<Recipient> Recipients { get; set; }
     }
 
-    public partial class Donate1Function : Donate1FunctionBase { }
-
-    [Function("donate")]
-    public class Donate1FunctionBase : FunctionMessage
-    {
-        [Parameter("address", "sender", 1)]
-        public virtual string Sender { get; set; }
-        [Parameter("uint256", "amount", 2)]
-        public virtual BigInteger Amount { get; set; }
-        [Parameter("address", "tokenAddress", 3)]
-        public virtual string TokenAddress { get; set; }
-    }
-
     public partial class DonateFunction : DonateFunctionBase { }
 
     [Function("donate")]
@@ -52,13 +39,12 @@ namespace Cointributors.Web.Client.Contract.CointributionSplitter.ContractDefini
         public virtual string TokenAddress { get; set; }
     }
 
-    public partial class GetRecipientFunction : GetRecipientFunctionBase { }
+    public partial class GetRecipientsFunction : GetRecipientsFunctionBase { }
 
-    [Function("getRecipient", typeof(GetRecipientOutputDTO))]
-    public class GetRecipientFunctionBase : FunctionMessage
+    [Function("getRecipients", typeof(GetRecipientsOutputDTO))]
+    public class GetRecipientsFunctionBase : FunctionMessage
     {
-        [Parameter("uint256", "index", 1)]
-        public virtual BigInteger Index { get; set; }
+
     }
 
     public partial class RecipientsFunction : RecipientsFunctionBase { }
@@ -85,15 +71,13 @@ namespace Cointributors.Web.Client.Contract.CointributionSplitter.ContractDefini
 
 
 
-
-
-    public partial class GetRecipientOutputDTO : GetRecipientOutputDTOBase { }
+    public partial class GetRecipientsOutputDTO : GetRecipientsOutputDTOBase { }
 
     [FunctionOutput]
-    public class GetRecipientOutputDTOBase : IFunctionOutputDTO 
+    public class GetRecipientsOutputDTOBase : IFunctionOutputDTO 
     {
-        [Parameter("tuple", "", 1)]
-        public virtual Recipient ReturnValue1 { get; set; }
+        [Parameter("tuple[]", "", 1)]
+        public virtual List<Recipient> ReturnValue1 { get; set; }
     }
 
     public partial class RecipientsOutputDTO : RecipientsOutputDTOBase { }

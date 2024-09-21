@@ -36,36 +36,6 @@ namespace Cointributors.Web.Client.Contract.CointributionSplitter
         {
         }
 
-        public Task<string> DonateRequestAsync(Donate1Function donate1Function)
-        {
-             return ContractHandler.SendRequestAsync(donate1Function);
-        }
-
-        public Task<TransactionReceipt> DonateRequestAndWaitForReceiptAsync(Donate1Function donate1Function, CancellationTokenSource cancellationToken = null)
-        {
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(donate1Function, cancellationToken);
-        }
-
-        public Task<string> DonateRequestAsync(string sender, BigInteger amount, string tokenAddress)
-        {
-            var donate1Function = new Donate1Function();
-                donate1Function.Sender = sender;
-                donate1Function.Amount = amount;
-                donate1Function.TokenAddress = tokenAddress;
-            
-             return ContractHandler.SendRequestAsync(donate1Function);
-        }
-
-        public Task<TransactionReceipt> DonateRequestAndWaitForReceiptAsync(string sender, BigInteger amount, string tokenAddress, CancellationTokenSource cancellationToken = null)
-        {
-            var donate1Function = new Donate1Function();
-                donate1Function.Sender = sender;
-                donate1Function.Amount = amount;
-                donate1Function.TokenAddress = tokenAddress;
-            
-             return ContractHandler.SendRequestAndWaitForReceiptAsync(donate1Function, cancellationToken);
-        }
-
         public Task<string> DonateRequestAsync(DonateFunction donateFunction)
         {
              return ContractHandler.SendRequestAsync(donateFunction);
@@ -94,17 +64,14 @@ namespace Cointributors.Web.Client.Contract.CointributionSplitter
              return ContractHandler.SendRequestAndWaitForReceiptAsync(donateFunction, cancellationToken);
         }
 
-        public Task<GetRecipientOutputDTO> GetRecipientQueryAsync(GetRecipientFunction getRecipientFunction, BlockParameter blockParameter = null)
+        public Task<GetRecipientsOutputDTO> GetRecipientsQueryAsync(GetRecipientsFunction getRecipientsFunction, BlockParameter blockParameter = null)
         {
-            return ContractHandler.QueryDeserializingToObjectAsync<GetRecipientFunction, GetRecipientOutputDTO>(getRecipientFunction, blockParameter);
+            return ContractHandler.QueryDeserializingToObjectAsync<GetRecipientsFunction, GetRecipientsOutputDTO>(getRecipientsFunction, blockParameter);
         }
 
-        public Task<GetRecipientOutputDTO> GetRecipientQueryAsync(BigInteger index, BlockParameter blockParameter = null)
+        public Task<GetRecipientsOutputDTO> GetRecipientsQueryAsync(BlockParameter blockParameter = null)
         {
-            var getRecipientFunction = new GetRecipientFunction();
-                getRecipientFunction.Index = index;
-            
-            return ContractHandler.QueryDeserializingToObjectAsync<GetRecipientFunction, GetRecipientOutputDTO>(getRecipientFunction, blockParameter);
+            return ContractHandler.QueryDeserializingToObjectAsync<GetRecipientsFunction, GetRecipientsOutputDTO>(null, blockParameter);
         }
 
         public Task<RecipientsOutputDTO> RecipientsQueryAsync(RecipientsFunction recipientsFunction, BlockParameter blockParameter = null)
@@ -124,9 +91,8 @@ namespace Cointributors.Web.Client.Contract.CointributionSplitter
         {
             return new List<Type>
             {
-                typeof(Donate1Function),
                 typeof(DonateFunction),
-                typeof(GetRecipientFunction),
+                typeof(GetRecipientsFunction),
                 typeof(RecipientsFunction)
             };
         }
