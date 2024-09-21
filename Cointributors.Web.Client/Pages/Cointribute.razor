@@ -32,7 +32,8 @@
         @if (!string.IsNullOrEmpty(transactionHash))
         {
             <p>
-                Awesome, you cointributed: <span class="fw-bold">@transactionHash</span>
+                Awesome, you cointributed! Don't believe us? 
+                You can check the transaction <a href="https://sepolia.etherscan.io/tx/@transactionHash" target="_blank">here</a>
             </p>
         }
         @if (!string.IsNullOrEmpty(errorMessage))
