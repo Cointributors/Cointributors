@@ -1,0 +1,76 @@
+﻿@page "/added-address-gist"
+
+@attribute [Authorize]
+
+@using Cointributors.Data
+@using Microsoft.AspNetCore.Authorization
+@using Cointributors.Web.Client.Pages
+@using Cointributors.Web.Components.Account
+@using Octokit
+
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject DataContext DataContext
+
+<PageTitle>Added your Cointributors Address</PageTitle>
+
+<div class="container-sm coin-small">
+    <h1>Cointributors Address is Ready!</h1>
+
+    @if (cointributorsGistUrl == null)
+    {
+
+    }
+    else
+    {
+        <p>
+            You just added a Cointributors Gist address as <span class="fw-bold">@cointributorsAddress</span>,
+            you can check it out <a href="@cointributorsGistUrl" target="_blank">here</a>
+        </p>
+        <p>
+            When you are ready you can add Cointributors to one of your <a href="/repositories">repositories</a>
+        </p>
+    }
+</div>
+
+@code {
+
+    public class AddressData
+    {
+        public string Address { get; set; }
+    }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private GitHubClient gitHubClient;
+
+    private string? cointributorsGistUrl;
+    private string? cointributorsAddress;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
+
+        gitHubClient = new GitHubClient(new ProductHeaderValue("cointributors"))
+            {
+                Credentials = new Credentials(accessToken)
+            };
+
+        var gists = await gitHubClient.Gist.GetAll();
+
+        var cointributorsGist = gists.SingleOrDefault(g => g.Description == "My Cointributors Address");
+
+        if (cointributorsGist != null)
+        {
+            cointributorsGist = await gitHubClient.Gist.Get(cointributorsGist.Id);
+
+            cointributorsGistUrl = cointributorsGist.HtmlUrl;
+            cointributorsAddress = cointributorsGist.Files.FirstOrDefault().Value.Content;
+        }
+        else
+        {
+            RedirectManager.RedirectTo("add-address-gist");
+        }
+    }
+}

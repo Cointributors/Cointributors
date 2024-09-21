@@ -14,18 +14,37 @@
 
 <PageTitle>Add your Cointributors Address</PageTitle>
 
-@if (AddressForm == null)
-{
+<div class="container-sm coin-small">
+    <h1>Add your Cointributors Address</h1>
 
-}
-else
-{
-    <EditForm Model="AddressForm" FormName="add-address-gist" OnSubmit="@AddAddress" method="post">
-        <DepositAddress></DepositAddress>
-        <button type="submit" class="btn btn-primary">Create</button>
-    </EditForm>
-}
 
+    @if (AddressForm == null)
+    {
+
+    }
+    else
+    {
+        if (addressAllreadyAdded)
+        {
+            <p>
+                It looks like you have already added a Cointributors Gist address as <span class="fw-bold">@AddressForm.Address</span>,
+                you can check it out <a href="@cointributorsGistUrl" target="_blank">here</a>
+            </p>
+            <p>
+                When you are ready you can add Cointributors to one of your <a href="/repositories">repositories</a>
+            </p>
+        }
+        else
+        {
+            <p>We just need to add a Gist of your address to your GitHub account so donations can flow your way</p>
+
+            <EditForm Model="AddressForm" FormName="add-address-gist" OnSubmit="@AddAddress" method="post">
+                <DepositAddress></DepositAddress>
+            </EditForm>
+        }
+
+    }
+</div>
 
 @code {
 
@@ -42,6 +61,9 @@ else
 
     private GitHubClient gitHubClient;
 
+    private bool addressAllreadyAdded;
+    private string cointributorsGistUrl;
+
     protected override async Task OnInitializedAsync()
     {
         var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
@@ -57,26 +79,38 @@ else
 
         if (cointributorsGist != null)
         {
-            var address = await gitHubClient.Gist.Get(cointributorsGist.Id);
+            addressAllreadyAdded = true;
 
-            ;
+            cointributorsGist = await gitHubClient.Gist.Get(cointributorsGist.Id);
+
+            cointributorsGistUrl = cointributorsGist.HtmlUrl;
+
+            AddressForm ??= new AddressData
+                {
+                    Address = cointributorsGist.Files.FirstOrDefault().Value.Content
+                };
+        }
+        else
+        {
+            addressAllreadyAdded = false;
+
+            AddressForm ??= new AddressData();
         }
 
-        AddressForm ??= new AddressData();
     }
 
     private async Task AddAddress()
     {
         await gitHubClient.Gist.Create(new NewGist
-        {
-            Description = "My Cointributors Address",
-            Public = true,
-            Files =
             {
-                { "Address", AddressForm!.Address }
-            }
-        });
+                Description = "My Cointributors Address",
+                Public = true,
+                Files =
+                {
+                    { "Address", AddressForm!.Address }
+                }
+            });
 
-        RedirectManager.RedirectToCurrentPage();
+        RedirectManager.RedirectTo("added-address-gist");
     }
 }

@@ -10,13 +10,19 @@
 <AuthorizeView Roles="EthereumConnected">
     <Authorized>
         <div>
-            @selectedAccount
+            <p>Is this you <span class="fw-bold">@selectedAccount</span>?</p>
             <input name="AddressForm.Address" value="@selectedAccount" type="hidden" />
+            
+            <div class="d-grid gap-2 mt-4 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-dark">That seems correct!</button>
+            </div>
         </div>
     </Authorized>
     <NotAuthorized>
         <div>
-            Please connect to Ethereum!
+            <p>
+                Please <span class="fw-bold">connect MetaMask</span> to add your address
+            </p>
         </div>
     </NotAuthorized>
 </AuthorizeView>
