@@ -1,0 +1,65 @@
+﻿@page "/repositories/{Id:long}/deployed"
+
+@attribute [Authorize]
+
+@using System.Text.Json
+@using Cointributors.Data
+@using Cointributors.Web.Components.Account
+@using Microsoft.AspNetCore.Authorization
+@using Octokit
+@using Cointributors.Web.Client.Pages
+@using Cointributors.Web.Client.Data
+
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject DataContext DataContext
+
+<PageTitle>Deployed</PageTitle>
+
+<div class="container-sm coin-small">
+    <h1>Deployed</h1>
+
+    <p>Let everyone know you are ready to receive Cointributors!</p>
+    
+    @if (_cointributorsData == null)
+    {
+
+    }
+    else
+    {
+        <pre>
+            <code>
+[![Cointribute](https://img.shields.io/badge/Cointribute_to_this_project-blue)](https://localhost:7268/donate/@_cointributorsData.Address)
+            </code>
+        </pre>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public long Id { get; set; }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    private GitHubClient gitHubClient;
+
+    private CointributorsData? _cointributorsData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
+
+        gitHubClient = new GitHubClient(new ProductHeaderValue("cointributors"))
+        {
+            Credentials = new Credentials(accessToken)
+        };
+
+        var repository = await gitHubClient.Repository.Get(Id);
+
+        var cointributorsBytes = await gitHubClient.Repository.Content.GetRawContent(repository.Owner.Login, repository.Name, "cointributors.json");
+
+        _cointributorsData = JsonSerializer.Deserialize<CointributorsData>(cointributorsBytes);
+    }
+}
