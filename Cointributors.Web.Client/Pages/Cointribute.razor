@@ -1,0 +1,185 @@
+﻿@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
+
+@using System.Diagnostics
+@using System.Numerics
+@using Cointributors.Web.Client.Contract.CointributionSplitter
+@using Nethereum.Contracts.Standards.ERC20
+@implements IDisposable
+@inject IJSRuntime jsRuntime
+@inject SelectedEthereumHostProviderService selectedHostProviderService
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider siweAuthenticationStateProvider
+
+<AuthorizeView Roles="EthereumConnected">
+    <Authorized>
+        <div class="d-grid gap-2 mt-4 d-md-flex justify-content-md-end">
+            <input @bind="donationAmount" type="number" placeholder="Enter donation amount" class="form-control me-2" style="width: 200px;" />
+            
+            <select @bind="selectedTokenAddress" class="form-select me-2" style="width: 200px;">
+                @if (tokenList != null)
+                {
+                    @foreach (var token in tokenList)
+                    {
+                        <option value="@token.Address">@token.Symbol</option>
+                    }
+                }
+            </select>
+
+            <a @onclick="@Contribute" class="btn btn-dark">Donate</a>
+        </div>
+        @if (!string.IsNullOrEmpty(transactionHash))
+        {
+            <p>
+                Awesome, you cointributed: <span class="fw-bold">@transactionHash</span>
+            </p>
+        }
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-2">@errorMessage</div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <div>
+            Please <span class="fw-bold">connect MetaMask</span> to donate
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private bool ethereumAvailable;
+    private string selectedAccount;
+    private long selectedChainId;
+
+    IEthereumHostProvider ethereumHostProvider;
+
+    private decimal donationAmount;
+    private string selectedTokenAddress;
+    private string transactionHash;
+    private string errorMessage;
+
+    private class TokenInfo
+    {
+        public string Symbol { get; set; }
+        public string Address { get; set; }
+    }
+
+    private List<TokenInfo> tokenList =
+    [
+        new TokenInfo { Symbol = "USDT", Address = "0xdac17f958d2ee523a2206206994597c13d831ec7" },
+    new TokenInfo { Symbol = "USDC", Address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" },
+    new TokenInfo { Symbol = "WETH", Address = "0xC02aaA39b223FE8D0A0e6C628489f4e40b3D30b" },
+    new TokenInfo { Symbol = "LINK", Address = "0x514910771af9ca656af840dff83e8264ecf986ca" }
+    ];
+
+    [Parameter]
+    public string ContractAddress { get; set; }
+
+    protected override void OnInitialized()
+    {
+        //metamask is selected
+        ethereumHostProvider = selectedHostProviderService.SelectedHost;
+        ethereumHostProvider.SelectedAccountChanged += OnSelectedAccountChanged;
+        ethereumHostProvider.NetworkChanged += OnNetworkChanged;
+        ethereumHostProvider.EnabledChanged += OnEnabledChanged;
+
+    }
+
+    public void Dispose()
+    {
+        ethereumHostProvider.SelectedAccountChanged -= OnSelectedAccountChanged;
+        ethereumHostProvider.NetworkChanged -= OnNetworkChanged;
+        ethereumHostProvider.EnabledChanged -= OnEnabledChanged;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ethereumAvailable = await ethereumHostProvider.CheckProviderAvailabilityAsync();
+        if (ethereumAvailable)
+        {
+            selectedAccount = await ethereumHostProvider.GetProviderSelectedAccountAsync();
+        }
+    }
+
+    private async Task OnSelectedAccountChanged(string account)
+    {
+        selectedAccount = account;
+        StateHasChanged();
+    }
+
+    private async Task OnNetworkChanged(long chainId)
+    {
+        selectedChainId = chainId;
+        StateHasChanged();
+    }
+
+    private async Task OnEnabledChanged(bool enabled)
+    {
+        if (enabled)
+        {
+            await GetChainId();
+            StateHasChanged();
+        }
+    }
+
+    private async Task GetChainId()
+    {
+        var web3 = await ethereumHostProvider.GetWeb3Async();
+        var chainId = await web3.Eth.ChainId.SendRequestAsync();
+        selectedChainId = (long)chainId.Value;
+    }
+
+    private async Task LoadSupportedTokens()
+    {
+    }
+
+    static BigInteger ConvertToWei(decimal amount)
+    {
+        return (BigInteger)(amount * 1_000_000_000_000_000_000m);
+    }
+
+    protected async Task Contribute()
+    {
+        if (donationAmount <= 0)
+        {
+            errorMessage = "Donation amount must be greater than 0.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(selectedTokenAddress))
+        {
+            errorMessage = "Token is required.";
+            return;
+        }
+
+        errorMessage = null;
+
+        var web3 = await ethereumHostProvider.GetWeb3Async();
+
+        var cointributionSplitterService = new CointributionSplitterService(web3, ContractAddress);
+
+        try
+        {
+            var donationAmountWei = ConvertToWei(donationAmount);
+
+            Console.WriteLine($"ContractAddress: {ContractAddress}");
+            Console.WriteLine($"Selected Token Address: {selectedTokenAddress}");
+            Console.WriteLine($"Donation Amount: {donationAmount}");
+            Console.WriteLine($"Donation Amount (in Wei): {donationAmountWei}");
+
+            var transactionReceipt = await cointributionSplitterService.DonateRequestAndWaitForReceiptAsync(donationAmountWei, "0x779877A7B0D9E8603169DdbD7836e478b4624789");
+
+            if (transactionReceipt.Status.Value == 1) // 1 means success
+            {
+                transactionHash = transactionReceipt.TransactionHash;
+            }
+            else
+            {
+                errorMessage = $"Transaction failed: {transactionReceipt.Status.Value}";
+            }
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+        }
+    }
+}

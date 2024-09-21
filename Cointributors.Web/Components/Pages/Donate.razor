@@ -1,10 +1,14 @@
 ﻿@page "/donate/{Address}"
 
+@using Cointributors.Web.Client.Pages
+
 <PageTitle>Donate</PageTitle>
 
 <div class="container-sm coin-small">
 
     <h1>Donate</h1>
+    
+    <Cointribute ContractAddress="@Address"></Cointribute>
 
 </div>
 @code {
