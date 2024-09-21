@@ -28,6 +28,19 @@ namespace Cointributors.Web.Client.Contract.CointributionSplitter.ContractDefini
         public virtual List<Recipient> Recipients { get; set; }
     }
 
+    public partial class Donate1Function : Donate1FunctionBase { }
+
+    [Function("donate")]
+    public class Donate1FunctionBase : FunctionMessage
+    {
+        [Parameter("address", "sender", 1)]
+        public virtual string Sender { get; set; }
+        [Parameter("uint256", "amount", 2)]
+        public virtual BigInteger Amount { get; set; }
+        [Parameter("address", "tokenAddress", 3)]
+        public virtual string TokenAddress { get; set; }
+    }
+
     public partial class DonateFunction : DonateFunctionBase { }
 
     [Function("donate")]
@@ -72,17 +85,15 @@ namespace Cointributors.Web.Client.Contract.CointributionSplitter.ContractDefini
 
 
 
+
+
     public partial class GetRecipientOutputDTO : GetRecipientOutputDTOBase { }
 
     [FunctionOutput]
     public class GetRecipientOutputDTOBase : IFunctionOutputDTO 
     {
-        [Parameter("address", "", 1)]
-        public virtual string ReturnValue1 { get; set; }
-        [Parameter("uint256", "", 2)]
-        public virtual BigInteger ReturnValue2 { get; set; }
-        [Parameter("bool", "", 3)]
-        public virtual bool ReturnValue3 { get; set; }
+        [Parameter("tuple", "", 1)]
+        public virtual Recipient ReturnValue1 { get; set; }
     }
 
     public partial class RecipientsOutputDTO : RecipientsOutputDTOBase { }

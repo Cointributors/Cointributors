@@ -36,6 +36,36 @@ namespace Cointributors.Web.Client.Contract.CointributionSplitter
         {
         }
 
+        public Task<string> DonateRequestAsync(Donate1Function donate1Function)
+        {
+             return ContractHandler.SendRequestAsync(donate1Function);
+        }
+
+        public Task<TransactionReceipt> DonateRequestAndWaitForReceiptAsync(Donate1Function donate1Function, CancellationTokenSource cancellationToken = null)
+        {
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(donate1Function, cancellationToken);
+        }
+
+        public Task<string> DonateRequestAsync(string sender, BigInteger amount, string tokenAddress)
+        {
+            var donate1Function = new Donate1Function();
+                donate1Function.Sender = sender;
+                donate1Function.Amount = amount;
+                donate1Function.TokenAddress = tokenAddress;
+            
+             return ContractHandler.SendRequestAsync(donate1Function);
+        }
+
+        public Task<TransactionReceipt> DonateRequestAndWaitForReceiptAsync(string sender, BigInteger amount, string tokenAddress, CancellationTokenSource cancellationToken = null)
+        {
+            var donate1Function = new Donate1Function();
+                donate1Function.Sender = sender;
+                donate1Function.Amount = amount;
+                donate1Function.TokenAddress = tokenAddress;
+            
+             return ContractHandler.SendRequestAndWaitForReceiptAsync(donate1Function, cancellationToken);
+        }
+
         public Task<string> DonateRequestAsync(DonateFunction donateFunction)
         {
              return ContractHandler.SendRequestAsync(donateFunction);
@@ -94,6 +124,7 @@ namespace Cointributors.Web.Client.Contract.CointributionSplitter
         {
             return new List<Type>
             {
+                typeof(Donate1Function),
                 typeof(DonateFunction),
                 typeof(GetRecipientFunction),
                 typeof(RecipientsFunction)
