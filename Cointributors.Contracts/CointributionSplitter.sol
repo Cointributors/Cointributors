@@ -2,17 +2,20 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "contracts/ICointributionSplitter.sol";
+
+interface ICointributionSplitter {
+    function donate(uint256 amount, address tokenAddress) external;
+    function donate(address sender, uint256 amount, address tokenAddress) external;
+}
+
+// Struct to hold the recipient's information
+struct Recipient{
+    address recipientAddress;
+    uint256 portion;    // Portion of the donation (in basis points, 1% = 100)
+    bool isSplitter;    // Whether the recipient is another CointributionSplitter contract
+}
 
 contract CointributionSplitter {
-
-    // Struct to hold the recipient's information
-    struct Recipient {
-        address recipientAddress;
-        uint256 portion;    // Portion of the donation (in basis points, 1% = 100)
-        bool isSplitter;    // Whether the recipient is another CointributionSplitter contract
-    }
-
     // Array to store all recipients
     Recipient[] public recipients;
 
@@ -32,8 +35,13 @@ contract CointributionSplitter {
         require(totalPortion == 10000, "Total portion must equal 10,000");
     }
 
-    // Donate function to distribute tokens to multiple recipients
+    // Donate function to distribute tokens from the message sender to the recipients
     function donate(uint256 amount, address tokenAddress) public {
+        donate(msg.sender, amount, tokenAddress);
+    }
+
+    // Donate function to distribute tokens from the specified sender to the recipients
+    function donate(address sender, uint256 amount, address tokenAddress) public {
         require(amount > 0, "Donation must be greater than 0");
 
         IERC20 token = IERC20(tokenAddress); // Create an instance of the ERC20 token being donated
@@ -43,19 +51,18 @@ contract CointributionSplitter {
 
             if (recipients[i].isSplitter) {
                 // If the recipient is another CointributionSplitter, call its donate function
-                ICointributionSplitter(recipients[i].recipientAddress).donate(recipientShare, tokenAddress);
+                ICointributionSplitter(recipients[i].recipientAddress).donate(sender, recipientShare, tokenAddress);
             } else {
                 // Otherwise, transfer the donation tokens to the recipient's wallet
-                require(token.transferFrom(msg.sender, recipients[i].recipientAddress, recipientShare), "Token transfer failed");
+                require(token.transferFrom(sender, recipients[i].recipientAddress, recipientShare), "Token transfer failed");
             }
         }
 
-        emit DonationReceived(msg.sender, tokenAddress, amount);
+        emit DonationReceived(sender, tokenAddress, amount);
     }
 
-    // Get details of a recipient (address, portion, and whether it is a CointributionSplitter)
-    function getRecipient(uint256 index) public view returns (address, uint256, bool) {
+    function getRecipient(uint256 index) public view returns (Recipient memory) {
         require(index < recipients.length, "Recipient index out of bounds");
-        return (recipients[index].recipientAddress, recipients[index].portion, recipients[index].isSplitter);
+        return recipients[index];
     }
 }
