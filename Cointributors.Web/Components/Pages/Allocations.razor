@@ -263,7 +263,7 @@
                 Allocations = AllocationsForm.Allocations.Where(a => a.Allocation > 0).Select(a => new CointributorsAllocationData
                 {
                     Destination = a.Destination,
-                    Type = DestinationType.Dependency,
+                    Type = a.Type,
                     AvatarUrl = a.AvatarUrl,
                     Address = a.Address,
                     Allocation = a.Allocation
