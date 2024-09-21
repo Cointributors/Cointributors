@@ -123,6 +123,8 @@
         {
             Input.Email = externalLoginInfo.Principal.FindFirstValue(ClaimTypes.Email) ?? "";
         }
+
+        await OnValidSubmitAsync();
     }
 
     private async Task OnValidSubmitAsync()

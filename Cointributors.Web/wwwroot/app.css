@@ -1,5 +1,10 @@
+@font-face {
+    font-family: 'ABeeZee';
+    src: url('/fonts/ABeeZee.ttf');
+}
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'ABeeZee', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 a, .btn-link {
