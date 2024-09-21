@@ -23,6 +23,21 @@ a, .btn-link {
 .coin-small {
     max-width: 640px;
 }
+.card-with-percentage {
+    padding-bottom: 0 !important;
+}
+
+.card-body .card-percentage {
+    font-size: 2.8rem;
+    line-height: 2rem;
+    color: rgb(108, 117, 125)
+}
+
+    .card-body .card-percentage span {
+        font-size: 2.2rem;
+        line-height: 2rem;
+        color: rgb(137, 144, 151)
+    }
 
 .btn-primary {
     color: #fff;
@@ -147,3 +162,48 @@ h1:focus {
     .bd-mode-toggle .dropdown-menu .active .bi {
         display: block !important;
     }
+
+
+.input-group {
+    margin-top: 30px;
+    position: relative;
+}
+
+.input-group {
+    position: relative;
+}
+
+.input-group-addon {
+    border: none;
+}
+
+.linkname {
+    display: none;
+}
+
+#copyButton {
+    cursor: pointer;
+    background: #f1bb3a;
+}
+
+#copyTarget {
+    border-left: none;
+}
+
+.copied {
+    opacity: 1;
+    position: absolute;
+    left: 55px;
+}
+
+@media (min-width: 768px) {
+    .copied {
+        left: 135px;
+    }
+
+    .linkname {
+        display: block;
+        background: #3b3e45;
+        color: #fff;
+    }
+}

@@ -17,23 +17,56 @@
 <PageTitle>Deployed</PageTitle>
 
 <div class="container-sm coin-small">
-    <h1>Deployed</h1>
+    <h1>Deployed and Ready for Cointributions</h1>
 
-    <p>Let everyone know you are ready to receive Cointributors!</p>
-    
+    <p>Let everyone know you are ready to receive a Cointribution!</p>
+    <p>You can copy the below badge and add it to your GitHub repository</p>
+
     @if (_cointributorsData == null)
     {
 
     }
     else
     {
-        <pre>
-            <code>
-[![Cointribute](https://img.shields.io/badge/Cointribute_to_this_project-blue)](https://localhost:7268/donate/@_cointributorsData.Address)
-            </code>
-        </pre>
+        <div class="d-grid">
+            <div class="clipboard-example align-items-center">
+                <div class="input-group mb-3 mt-1">
+                    <input id="in01"
+                           type="text"
+                           class="form-control"
+                           placeholder="Cointributor Badge"
+                           aria-label="Cointributor Badge"
+                           aria-describedby="btn01"
+                           value="[![Cointribute](https://img.shields.io/badge/Cointribute_to_this_project-blue)](https://localhost:7268/donate/@_cointributorsData.Address)"
+                           readonly>
+                    <button id="btn01"
+                            class="btn btn-secondary"
+                            type="button"
+                            data-clipboard-demo=""
+                            data-clipboard-target="#in01"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            title="Copy to Clipboard">
+                        Copy
+                    </button>
+                </div>
+            </div>
+        </div>
     }
 </div>
+
+<script>
+    let btn = document.getElementById('btn01');
+    let clipboard = new ClipboardJS(btn);
+
+    clipboard.on('success', function (e) {
+        console.log(e);
+    });
+
+    clipboard.on('error', function (e) {
+        console.log(e);
+    });
+</script>
 
 @code {
 
@@ -52,9 +85,9 @@
         var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
 
         gitHubClient = new GitHubClient(new ProductHeaderValue("cointributors"))
-        {
-            Credentials = new Credentials(accessToken)
-        };
+            {
+                Credentials = new Credentials(accessToken)
+            };
 
         var repository = await gitHubClient.Repository.Get(Id);
 

@@ -14,13 +14,25 @@
         <input name="AddressForm.Address" value="@contractAddress" type="hidden" />
         @if (contractAddress == null)
         {
+            <p class="mt-4">If the above allocations are correct then hit that button!</p>
+
             <div class="d-grid gap-2 mt-4 d-md-flex justify-content-md-end">
-                <a @onclick="@Deploy" class="btn btn-dark">Deploy that Contract!</a>
+                @if (!deploying)
+                {
+                    <a @onclick="@Deploy" class="btn btn-dark">Deploy that Contract!</a>
+                }
+                else
+                {
+                    <button type="button" class="btn btn-dark" disabled>
+                        Deploying...
+                        <i class="bi bi-send-check-fill"></i>
+                    </button>
+                }
             </div>
         }
         else
         {
-            <p>
+            <p class="mt-4">
                 Awesome, the Cointribution contract has been deployed at <span class="fw-bold">@contractAddress</span>
             </p>
             <p>
@@ -51,6 +63,7 @@
     private string selectedAccount;
     private long selectedChainId;
     private string userName;
+    private bool deploying;
     private string contractAddress;
 
     IEthereumHostProvider ethereumHostProvider;
@@ -119,6 +132,8 @@
     {
         if (CointributorsData != null)
         {
+            deploying = true;
+
             var web3 = await ethereumHostProvider.GetWeb3Async();
             var deployment = new CointributionSplitterDeployment
             {
