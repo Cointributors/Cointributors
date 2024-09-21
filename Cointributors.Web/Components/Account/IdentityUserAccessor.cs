@@ -32,7 +32,7 @@ internal sealed class IdentityUserAccessor(UserManager<User> userManager, DataCo
     {
         var userId = userManager.GetUserId(context.User)!;
 
-        var accessToken = await dataContext.UserTokens.Where(t => t.UserId == userId && t.Name == "access_token").SingleAsync();
+        var accessToken = await dataContext.UserTokens.Where(t => t.UserId == userId && t.LoginProvider == "GitHub" && t.Name == "access_token").SingleAsync();
 
         return accessToken.Value!;
     }
