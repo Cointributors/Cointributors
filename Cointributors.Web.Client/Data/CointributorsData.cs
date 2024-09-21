@@ -16,9 +16,10 @@
 
     public class CointributorsAllocationData
     {
-        public string AvatarUrl { get; set; }
-        public string Address { get; set; }
+        public string Destination { get; set; }
         public DestinationType Type { get; set; }
+        public string AvatarUrl { get; set; }
+        public string? Address { get; set; }
         public int Allocation { get; set; }
     }
 }

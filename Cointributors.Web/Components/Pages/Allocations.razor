@@ -74,6 +74,8 @@
             
             @if (AllocationsForm.Allocations.Any())
             {
+                <p>Don't f#$% it up, we didn't add any validation...</p>
+
                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                     <button type="submit" class="btn btn-dark">That seems fair!</button>
                 </div>
@@ -112,6 +114,7 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    private string? cointributorsSha;
     private List<AllocationData> requiredGistAllocations;
     private GitHubClient gitHubClient;
 
@@ -124,6 +127,9 @@
                 Credentials = new Credentials(accessToken)
             };
 
+        var contents = await gitHubClient.Repository.Content.GetAllContents(Id);
+
+        cointributorsSha = contents.SingleOrDefault(c => c.Name == "cointributors.json")?.Sha;
 
         if (AllocationsForm == null)
         {
@@ -165,8 +171,6 @@
                         });
                 }
             }
-
-            var contents = await gitHubClient.Repository.Content.GetAllContents(Id);
 
             var requirementsFile = contents.FirstOrDefault(c => c.Name == "requirements.txt");
 
@@ -235,19 +239,31 @@
 
     private async Task CreateAllocations()
     {
-        await gitHubClient.Repository.Content.CreateFile(Id, "cointributors.json",
-            new CreateFileRequest("Adding Cointributors", JsonSerializer.Serialize(new CointributorsData
+        var cointributorsJson = JsonSerializer.Serialize(new CointributorsData
+            {
+                AvatarUrl = AllocationsForm.AvatarUrl,
+                Address = null,
+                Allocations = AllocationsForm.Allocations.Where(a => a.Allocation > 0).Select(a => new CointributorsAllocationData
                 {
-                    AvatarUrl = AllocationsForm.AvatarUrl,
-                    Address = null,
-                    Allocations = AllocationsForm.Allocations.Where(a => a.Allocation > 0).Select(a => new CointributorsAllocationData
-                    {
-                        AvatarUrl = a.AvatarUrl,
-                        Address = a.Address,
-                        Type = a.Type,
-                        Allocation = a.Allocation
-                    }).ToList()
-                })));
+                    Destination = a.Destination,
+                    Type = DestinationType.Dependency,
+                    AvatarUrl = a.AvatarUrl,
+                    Address = a.Address,
+                    Allocation = a.Allocation
+                }).ToList()
+            });
+
+        if (cointributorsSha != null)
+        {
+            await gitHubClient.Repository.Content.UpdateFile(Id, "cointributors.json",
+                new UpdateFileRequest("Updating Cointributors", cointributorsJson, cointributorsSha));
+        }
+        else
+        {
+            await gitHubClient.Repository.Content.CreateFile(Id, "cointributors.json",
+                new CreateFileRequest("Adding Cointributors", cointributorsJson));
+
+        }
 
         RedirectManager.RedirectTo($"repositories/{Id}/deploy");
     }

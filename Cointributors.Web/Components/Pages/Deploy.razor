@@ -14,19 +14,39 @@
 @inject IdentityRedirectManager RedirectManager
 @inject DataContext DataContext
 
-<PageTitle>Deployment</PageTitle>
+<PageTitle>Make it Live!</PageTitle>
 
 <div class="container-sm coin-small">
-    <h1>Deployment</h1>
+    <h1>Make it Live!</h1>
 
-    <p>Deploy your smart contract.</p>
-    
     @if (AddressForm == null)
     {
 
     }
     else
     {
+        if (_cointributorsData != null)
+        {
+            foreach (var allocation in _cointributorsData.Allocations)
+            {
+                <div class="card mb-1">
+                    <div class="row g-0">
+                        <div class="col-md-2 border-end">
+                            <img src="@allocation.AvatarUrl" class="img-fluid rounded-start" alt="@allocation.Destination">
+                        </div>
+                        <div class="col-md-10">
+                            <div class="card-body card-with-percentage">
+                                <h5 class="card-title text-truncate">@allocation.Destination</h5>
+                                <p class="card-text card-percentage">
+                                    @allocation.Allocation<span>%</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
         <EditForm Model="AddressForm" FormName="deploy-contract" OnSubmit="@AddAddress" method="post">
             <DeployContract CointributorsData="_cointributorsData"></DeployContract>
         </EditForm>
