@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AspNet.Security.OAuth.WorldId\AspNet.Security.OAuth.WorldId.csproj" />
     <ProjectReference Include="..\Cointributors.Data\Cointributors.Data.csproj" />
     <ProjectReference Include="..\Cointributors.ServiceDefaults\Cointributors.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Cointributors.Web.Client\Cointributors.Web.Client.csproj" />

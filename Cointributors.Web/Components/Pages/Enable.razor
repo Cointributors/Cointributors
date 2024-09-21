@@ -15,8 +15,23 @@
 <PageTitle>Add your Cointributors Address</PageTitle>
 
 <div class="container-sm coin-small">
+
     <h1>Add your Cointributors Address</h1>
 
+    @if (hasWorldIdLogin == false)
+    {
+        <form class="form-horizontal" action="Account/Manage/LinkExternalLogin" method="post">
+            <div>
+                <AntiforgeryToken />
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-outline-dark" name="Provider" value="WorldId">
+                        <i class="bi bi-github"></i>
+                        Sign in with WorldId
+                    </button>
+                </div>
+            </div>
+        </form>
+    }
 
     @if (AddressForm == null)
     {
@@ -61,42 +76,47 @@
 
     private GitHubClient gitHubClient;
 
+    private bool? hasWorldIdLogin;
     private bool addressAllreadyAdded;
     private string cointributorsGistUrl;
 
     protected override async Task OnInitializedAsync()
     {
-        var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
+        hasWorldIdLogin = await UserAccessor.GetWorldIdLogin(HttpContext);
 
-        gitHubClient = new GitHubClient(new ProductHeaderValue("cointributors"))
+        if (hasWorldIdLogin == true)
+        {
+            var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
+
+            gitHubClient = new GitHubClient(new ProductHeaderValue("cointributors"))
             {
                 Credentials = new Credentials(accessToken)
             };
 
-        var gists = await gitHubClient.Gist.GetAll();
+            var gists = await gitHubClient.Gist.GetAll();
 
-        var cointributorsGist = gists.SingleOrDefault(g => g.Description == "My Cointributors Address");
+            var cointributorsGist = gists.SingleOrDefault(g => g.Description == "My Cointributors Address");
 
-        if (cointributorsGist != null)
-        {
-            addressAllreadyAdded = true;
+            if (cointributorsGist != null)
+            {
+                addressAllreadyAdded = true;
 
-            cointributorsGist = await gitHubClient.Gist.Get(cointributorsGist.Id);
+                cointributorsGist = await gitHubClient.Gist.Get(cointributorsGist.Id);
 
-            cointributorsGistUrl = cointributorsGist.HtmlUrl;
+                cointributorsGistUrl = cointributorsGist.HtmlUrl;
 
-            AddressForm ??= new AddressData
+                AddressForm ??= new AddressData
                 {
                     Address = cointributorsGist.Files.FirstOrDefault().Value.Content
                 };
-        }
-        else
-        {
-            addressAllreadyAdded = false;
+            }
+            else
+            {
+                addressAllreadyAdded = false;
 
-            AddressForm ??= new AddressData();
+                AddressForm ??= new AddressData();
+            }
         }
-
     }
 
     private async Task AddAddress()

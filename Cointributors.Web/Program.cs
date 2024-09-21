@@ -5,6 +5,7 @@ using Cointributors.Web.Components.Account;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Nethereum.Metamask;
 using Nethereum.Metamask.Blazor;
 using Nethereum.UI;
@@ -32,6 +33,13 @@ public class Program
             {
                 options.DefaultScheme = IdentityConstants.ApplicationScheme;
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            })
+            .AddWorldId(options =>
+            {
+                options.ClientId = builder.Configuration.GetValue<string>("Authentication:WorldId:ClientId")!;
+                options.ClientSecret = builder.Configuration.GetValue<string>("Authentication:WorldId:ClientSecret")!;
+
+                options.StateDataFormat = new CustomStateDataFormat(new MemoryCache(new MemoryCacheOptions()));
             })
             .AddGitHub(options =>
             {

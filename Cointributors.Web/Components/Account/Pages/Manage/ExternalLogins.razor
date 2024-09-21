@@ -132,9 +132,11 @@
             RedirectManager.RedirectToCurrentPageWithStatus("Error: The external login was not added. External logins can only be associated with one account.", HttpContext);
         }
 
+        result = await SignInManager.UpdateExternalAuthenticationTokensAsync(info);
+        
         // Clear the existing external cookie to ensure a clean login process
         await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
 
-        RedirectManager.RedirectToCurrentPageWithStatus("The external login was added.", HttpContext);
+        RedirectManager.RedirectTo("add-address-gist");
     }
 }
