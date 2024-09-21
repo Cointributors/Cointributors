@@ -30,7 +30,7 @@
     {
         @if (requiredGistAllocations != null && requiredGistAllocations.Any())
         {
-            <p class="text-secondary">The following contributors/dependecies which do not have a Gist Address; @string.Join(", ", requiredGistAllocations.Select(a => a.Destination)).</p>
+            <p class="text-secondary">The following contributors/dependencies which do not have a Gist Address; @string.Join(", ", requiredGistAllocations.Select(a => a.Destination)).</p>
             <p class="text-secondary">Send them <a href="add-address-gist" target="_blank">here</a> so they can receive an allocation of the Cointribution</p>
         }
 
@@ -83,7 +83,7 @@
             }
             else
             {
-                <p>There are no contributors/dependecies with a Gist Address :(</p>
+                <p>There are no contributors/dependencies with a Gist Address :(</p>
             }
 
         </EditForm>
