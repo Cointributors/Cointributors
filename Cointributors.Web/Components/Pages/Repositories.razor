@@ -10,13 +10,13 @@
 @inject IdentityUserAccessor UserAccessor
 @inject DataContext DataContext
 
-<PageTitle>Repositories</PageTitle>
+<PageTitle>Select a Repository</PageTitle>
 
 <div class="container-sm coin-small">
 
-    <h1>Repositories</h1>
+    <h1>Select a Repository</h1>
 
-    <p>Select the repository with the best cointributors.</p>
+    <p>Select the repository with the best cointributors</p>
 
 
     @if (repositories == null)
@@ -29,14 +29,20 @@
         {
             <div class="card mb-3">
                 <div class="row g-0">
-                    <div class="col-md-2">
-                        <img src="@repository.Owner.AvatarUrl" class="img-fluid rounded-start" alt="...">
+                    <div class="col-md-2 border-end">
+                        <img src="@repository.Owner.AvatarUrl" class="img-fluid rounded-start" alt="@repository.Name">
                     </div>
-                    <div class="col-md-10">
+                    <div class="col-md-8">
                         <div class="card-body">
-                            <h5 class="card-title">@repository.Name</h5>
-                            <p class="card-text"><a href="/repositories/@repository.Id">Select</a></p>
+                            <h5 class="card-title text-truncate">@repository.Name</h5>
+                            <p class="card-text text-truncate">@repository.Description</p>
                         </div>
+                    </div>
+                    <div class="col-md-2 d-flex justify-content-center border-start">
+                        <a class="icon-link icon-link-hover link-dark link-underline link-underline-opacity-0" href="/repositories/@repository.Id">
+                            Select
+                            <i class="bi bi-arrow-right" style="height: 1.5rem;"></i>
+                        </a>
                     </div>
                 </div>
             </div>
