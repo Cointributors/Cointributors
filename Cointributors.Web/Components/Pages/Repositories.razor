@@ -12,38 +12,38 @@
 
 <PageTitle>Repositories</PageTitle>
 
-<h1>Repositories</h1>
+<div class="container-sm coin-small">
 
-<p>Select the repository with the best cointributors.</p>
+    <h1>Repositories</h1>
+
+    <p>Select the repository with the best cointributors.</p>
 
 
-@if (repositories == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var repository in repositories)
-            {
-                <tr>
-                    <td>@repository.Name</td>
-                    <td>
-                        <a href="/repositories/@repository.Id">Select</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+    @if (repositories == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        @foreach (var repository in repositories)
+        {
+            <div class="card mb-3">
+                <div class="row g-0">
+                    <div class="col-md-2">
+                        <img src="@repository.Owner.AvatarUrl" class="img-fluid rounded-start" alt="...">
+                    </div>
+                    <div class="col-md-10">
+                        <div class="card-body">
+                            <h5 class="card-title">@repository.Name</h5>
+                            <p class="card-text"><a href="/repositories/@repository.Id">Select</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
 
+</div>
 
 @code {
     [CascadingParameter]
@@ -63,5 +63,6 @@ else
             };
 
         repositories = await gitHubClient.Repository.GetAllForCurrent();
+
     }
 }

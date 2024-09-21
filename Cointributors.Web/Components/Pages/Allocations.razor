@@ -16,54 +16,57 @@
 
 <PageTitle>Allocations</PageTitle>
 
-<h1>Allocations</h1>
+<div class="container-sm coin-small">
+    <h1>Allocations</h1>
 
-<p>Choose your users/projects allocations.</p>
+    <p>Choose your users/projects allocations.</p>
 
 
-@if (AllocationsForm == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <EditForm Model="AllocationsForm" FormName="create-allocations" OnSubmit="@CreateAllocations" method="post">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Destination</th>
-                    <th>Type</th>
-                    <th>Allocation</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (var i = 0; i < AllocationsForm.Allocations.Count; i++)
-                {
+    @if (AllocationsForm == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <EditForm Model="AllocationsForm" FormName="create-allocations" OnSubmit="@CreateAllocations" method="post">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td>@AllocationsForm.Allocations[i].Destination</td>
-                        <td>@AllocationsForm.Allocations[i].Type</td>
-                        <td>
-                            <input name="AllocationsForm.Allocations[@(i)].Destination" value="@AllocationsForm.Allocations[i].Destination" type="hidden" />
-                            <input name="AllocationsForm.Allocations[@(i)].Type" value="@AllocationsForm.Allocations[i].Type" type="hidden" />
-                            <input name="AllocationsForm.Allocations[@(i)].Address" value="@AllocationsForm.Allocations[i].Address" type="hidden" />
-                            @if (AllocationsForm.Allocations[i].Address != null)
-                            {
-                                <input class="form-control" name="AllocationsForm.Allocations[@(i)].Allocation" value="@AllocationsForm.Allocations[i].Allocation" />
-                            }
-                            else
-                            {
-                                <div>Add cointributors address</div>
-                            }
-                        </td>
+                        <th>Destination</th>
+                        <th>Type</th>
+                        <th>Allocation</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < AllocationsForm.Allocations.Count; i++)
+                    {
+                        <tr>
+                            <td>@AllocationsForm.Allocations[i].Destination</td>
+                            <td>@AllocationsForm.Allocations[i].Type</td>
+                            <td>
+                                <input name="AllocationsForm.Allocations[@(i)].Destination" value="@AllocationsForm.Allocations[i].Destination" type="hidden" />
+                                <input name="AllocationsForm.Allocations[@(i)].Type" value="@AllocationsForm.Allocations[i].Type" type="hidden" />
+                                <input name="AllocationsForm.Allocations[@(i)].Address" value="@AllocationsForm.Allocations[i].Address" type="hidden" />
+                                @if (AllocationsForm.Allocations[i].Address != null)
+                                {
+                                    <input class="form-control" name="AllocationsForm.Allocations[@(i)].Allocation" value="@AllocationsForm.Allocations[i].Allocation" />
+                                }
+                                else
+                                {
+                                    <div>Add cointributors address</div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
 
-        <button type="submit" class="btn btn-primary">Create</button>
-    </EditForm>
-}
-
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-dark">That seems fair!</button>
+            </div>
+        </EditForm>
+    }
+</div>
 
 @code {
     public class AllocationData

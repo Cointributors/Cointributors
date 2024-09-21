@@ -20,6 +20,9 @@ a, .btn-link {
         z-index: 2;
     }
 
+.coin-small {
+    max-width: 640px;
+}
 
 .btn-primary {
     color: #fff;
