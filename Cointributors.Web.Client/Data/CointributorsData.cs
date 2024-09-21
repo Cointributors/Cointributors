@@ -1,4 +1,4 @@
-﻿namespace Cointributors.Web.Data
+﻿namespace Cointributors.Web.Client.Data
 {
     public enum DestinationType
     {
