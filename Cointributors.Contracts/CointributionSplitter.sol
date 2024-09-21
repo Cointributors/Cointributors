@@ -35,17 +35,15 @@ contract CointributionSplitter {
         require(amount > 0, "Amount must be greater than 0");
         IERC20 token = IERC20(tokenAddress);
 
-        // Iterate over recipients to perform direct transfers
         for (uint256 i = 0; i < recipients.length; i++) {
             uint256 recipientShare = (amount * recipients[i].portion) / 10000;
 
             if (recipients[i].isSplitter) {
-                // Retrieve recipients from the other splitter
-                Recipient[] memory otherRecipients = ICointributionSplitter(recipients[i].recipientAddress).getRecipients();
+                Recipient[] memory splitterRecipients = ICointributionSplitter(recipients[i].recipientAddress).getRecipients();
 
-                for (uint256 j = 0; j < otherRecipients.length; j++) {
-                    uint256 otherRecipientShare = (recipientShare * otherRecipients[j].portion) / 10000;
-                    require(token.transferFrom(msg.sender, otherRecipients[j].recipientAddress, otherRecipientShare), "Token transfer to splitter recipient failed");
+                for (uint256 j = 0; j < splitterRecipients.length; j++) {
+                    uint256 splitterRecipientShare = (recipientShare * splitterRecipients[j].portion) / 10000;
+                    require(token.transferFrom(msg.sender, splitterRecipients[j].recipientAddress, splitterRecipientShare), "Token transfer to splitter recipient failed");
                 }
             } else {
                 require(token.transferFrom(msg.sender, recipients[i].recipientAddress, recipientShare), "Token transfer failed");
@@ -55,7 +53,6 @@ contract CointributionSplitter {
         emit DonationReceived(msg.sender, tokenAddress, amount);
     }
 
-    // Function to get all recipients
     function getRecipients() external view returns (Recipient[] memory) {
         return recipients;
     }
