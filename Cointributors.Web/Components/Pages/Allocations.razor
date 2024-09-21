@@ -17,10 +17,9 @@
 <PageTitle>Allocations</PageTitle>
 
 <div class="container-sm coin-small">
-    <h1>Allocations</h1>
+    <h1>Choose your Allocation</h1>
 
-    <p>Choose your users/projects allocations.</p>
-
+    <p>Who worked hard for their cointribution? Don't forget the projects you depend on</p>
 
     @if (AllocationsForm == null)
     {
@@ -28,42 +27,62 @@
     }
     else
     {
+        @if (requiredGistAllocations != null && requiredGistAllocations.Any())
+        {
+            <p class="text-secondary">The following contributors/dependecies which do not have a Gist Address; @string.Join(", ", requiredGistAllocations.Select(a => a.Destination)).</p>
+            <p class="text-secondary">Send them <a href="add-address-gist" target="_blank">here</a> so they can receive an allocation of the Cointribution</p>
+        }
+
         <EditForm Model="AllocationsForm" FormName="create-allocations" OnSubmit="@CreateAllocations" method="post">
+            <input name="AllocationsForm.AvatarUrl" value="@AllocationsForm.AvatarUrl" type="hidden" />
             <table class="table">
                 <thead>
-                    <tr>
-                        <th>Destination</th>
-                        <th>Type</th>
-                        <th>Allocation</th>
-                    </tr>
+                <tr>
+                    <th></th>
+                    <th>Destination</th>
+                    <th>Type</th>
+                    <th class="w-25">Allocation</th>
+                </tr>
                 </thead>
                 <tbody>
-                    @for (var i = 0; i < AllocationsForm.Allocations.Count; i++)
-                    {
-                        <tr>
-                            <td>@AllocationsForm.Allocations[i].Destination</td>
-                            <td>@AllocationsForm.Allocations[i].Type</td>
-                            <td>
-                                <input name="AllocationsForm.Allocations[@(i)].Destination" value="@AllocationsForm.Allocations[i].Destination" type="hidden" />
-                                <input name="AllocationsForm.Allocations[@(i)].Type" value="@AllocationsForm.Allocations[i].Type" type="hidden" />
-                                <input name="AllocationsForm.Allocations[@(i)].Address" value="@AllocationsForm.Allocations[i].Address" type="hidden" />
-                                @if (AllocationsForm.Allocations[i].Address != null)
-                                {
-                                    <input class="form-control" name="AllocationsForm.Allocations[@(i)].Allocation" value="@AllocationsForm.Allocations[i].Allocation" />
-                                }
-                                else
-                                {
-                                    <div>Add cointributors address</div>
-                                }
-                            </td>
-                        </tr>
-                    }
+                @for (var i = 0; i < AllocationsForm.Allocations.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <img src="@AllocationsForm.Allocations[i].AvatarUrl" class="img-fluid" style="width: 2rem;" alt="@AllocationsForm.Allocations[i].Destination">
+                        </td>
+                        <td>@AllocationsForm.Allocations[i].Destination</td>
+                        <td>@AllocationsForm.Allocations[i].Type</td>
+                        <td>
+                            <input name="AllocationsForm.Allocations[@(i)].AvatarUrl" value="@AllocationsForm.Allocations[i].AvatarUrl" type="hidden"/>
+                            <input name="AllocationsForm.Allocations[@(i)].Destination" value="@AllocationsForm.Allocations[i].Destination" type="hidden"/>
+                            <input name="AllocationsForm.Allocations[@(i)].Type" value="@AllocationsForm.Allocations[i].Type" type="hidden"/>
+                            <input name="AllocationsForm.Allocations[@(i)].Address" value="@AllocationsForm.Allocations[i].Address" type="hidden"/>
+                            @if (AllocationsForm.Allocations[i].Address != null)
+                            {
+                                <input class="form-control" name="AllocationsForm.Allocations[@(i)].Allocation" value="@AllocationsForm.Allocations[i].Allocation"/>
+                            }
+                            else
+                            {
+                                <div>Add cointributors address</div>
+                            }
+                        </td>
+                    </tr>
+                }
                 </tbody>
             </table>
+            
+            @if (AllocationsForm.Allocations.Any())
+            {
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-dark">That seems fair!</button>
+                </div>
+            }
+            else
+            {
+                <p>There are no contributors/dependecies with a Gist Address :(</p>
+            }
 
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <button type="submit" class="btn btn-dark">That seems fair!</button>
-            </div>
         </EditForm>
     }
 </div>
@@ -73,12 +92,14 @@
     {
         public string Destination { get; set; }
         public DestinationType Type { get; set; }
+        public string AvatarUrl { get; set; }
         public string? Address { get; set; }
         public int Allocation { get; set; }
     }
 
     public class AllocationsData
     {
+        public string AvatarUrl { get; set; }
         public List<AllocationData> Allocations { get; set; }
     }
 
@@ -91,6 +112,7 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    private List<AllocationData> requiredGistAllocations;
     private GitHubClient gitHubClient;
 
     protected override async Task OnInitializedAsync()
@@ -110,6 +132,7 @@
             var contributors = await gitHubClient.Repository.Statistics.GetContributors(Id);
 
             var allocations = new List<AllocationData>();
+            requiredGistAllocations = new List<AllocationData>();
 
             foreach (var contributor in contributors)
             {
@@ -125,16 +148,18 @@
                         {
                             Destination = contributor.Author.Login,
                             Type = DestinationType.User,
+                            AvatarUrl = contributor.Author.AvatarUrl,
                             Address = cointributorsGist.Files.FirstOrDefault().Value.Content,
                             Allocation = 0
                         });
                 }
                 else
                 {
-                    allocations.Add(new AllocationData
+                    requiredGistAllocations.Add(new AllocationData
                         {
                             Destination = contributor.Author.Login,
                             Type = DestinationType.User,
+                            AvatarUrl = contributor.Author.AvatarUrl,
                             Address = null,
                             Allocation = 0
                         });
@@ -162,6 +187,8 @@
                         var dependencyRepositoryOwner = lineSplit[^3];
                         var dependencyRepositoryName = lineSplit[^2];
 
+                        var dependencyRepository = await gitHubClient.Repository.Get(dependencyRepositoryOwner, dependencyRepositoryName);
+
                         var dependencyRepositoryContents = await gitHubClient.Repository.Content.GetAllContents(dependencyRepositoryOwner, dependencyRepositoryName);
 
                         var dependencyRepositoryCointributorsFile = dependencyRepositoryContents.FirstOrDefault(c => c.Name == "cointributors.json");
@@ -173,22 +200,22 @@
 
                             var dependencyRepositoryCointributors = JsonSerializer.Deserialize<CointributorsData>(dependencyRepositoryCointributorsBytes);
 
-                            // TODO: Check the address of the json and use it
-
                             allocations.Add(new AllocationData
                                 {
                                     Destination = dependencyName,
                                     Type = DestinationType.Dependency,
+                                    AvatarUrl = dependencyRepository.Owner.AvatarUrl,
                                     Address = dependencyRepositoryCointributors.Allocations.FirstOrDefault().Address,
                                     Allocation = 0
                                 });
                         }
                         else
                         {
-                            allocations.Add(new AllocationData
+                            requiredGistAllocations.Add(new AllocationData
                                 {
                                     Destination = dependencyName,
                                     Type = DestinationType.Dependency,
+                                    AvatarUrl = dependencyRepository.Owner.AvatarUrl,
                                     Address = null,
                                     Allocation = 0
                                 });
@@ -200,6 +227,7 @@
 
             AllocationsForm ??= new AllocationsData
                 {
+                    AvatarUrl = repository.Owner.AvatarUrl,
                     Allocations = allocations.OrderBy(a => a.Type).ThenBy(a => a.Destination).ToList()
                 };
         }
@@ -210,9 +238,11 @@
         await gitHubClient.Repository.Content.CreateFile(Id, "cointributors.json",
             new CreateFileRequest("Adding Cointributors", JsonSerializer.Serialize(new CointributorsData
                 {
+                    AvatarUrl = AllocationsForm.AvatarUrl,
                     Address = null,
                     Allocations = AllocationsForm.Allocations.Where(a => a.Allocation > 0).Select(a => new CointributorsAllocationData
                     {
+                        AvatarUrl = a.AvatarUrl,
                         Address = a.Address,
                         Type = a.Type,
                         Allocation = a.Allocation
