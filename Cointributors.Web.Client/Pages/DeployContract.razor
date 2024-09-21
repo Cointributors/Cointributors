@@ -1,6 +1,8 @@
 ﻿@rendermode @(new InteractiveWebAssemblyRenderMode(prerender:false))
 
 @using System.Security.Claims
+@using Cointributors.Web.Client.Contract.CointributionSplitter.ContractDefinition
+@using Cointributors.Web.Client.Data
 @implements IDisposable
 @inject IJSRuntime jsRuntime
 @inject SelectedEthereumHostProviderService selectedHostProviderService
@@ -11,6 +13,10 @@
     <Authorized>
         <div>
             Ethereum connected!
+        </div>
+        <button @onclick="@Deploy" class="btn btn-primary">Deploy</button>
+        <div>
+            @contractAddress
         </div>
     </Authorized>
     <NotAuthorized>
@@ -25,10 +31,14 @@
     [CascadingParameter]
     public Task<AuthenticationState?> AuthenticationState { get; set; }
 
+    [Parameter]
+    public CointributorsData CointributorsData { get; set; }
+
     private bool ethereumAvailable;
     private string selectedAccount;
     private long selectedChainId;
     private string userName;
+    private string contractAddress;
 
     IEthereumHostProvider ethereumHostProvider;
 
@@ -90,5 +100,32 @@
         var web3 = await ethereumHostProvider.GetWeb3Async();
         var chainId = await web3.Eth.ChainId.SendRequestAsync();
         selectedChainId = (long)chainId.Value;
+    }
+
+    protected async Task Deploy()
+    {
+        if (CointributorsData != null)
+        {
+            var web3 = await ethereumHostProvider.GetWeb3Async();
+            var deployment = new CointributionSplitterDeployment
+            {
+                Recipients = []
+            };
+
+            foreach (var allocation in CointributorsData.Allocations)
+            {
+                deployment.Recipients.Add(new Recipient
+                {
+                    RecipientAddress = allocation.Address,
+                    Portion = allocation.Allocation * 100, // Convert to bps
+                    IsSplitter = allocation.Type == DestinationType.Dependency
+                });
+            }
+
+            var transactionReceipt = await web3.Eth.GetContractDeploymentHandler<CointributionSplitterDeployment>()
+                .SendRequestAndWaitForReceiptAsync(deployment);
+
+            contractAddress = transactionReceipt.ContractAddress;
+        }
     }
 }

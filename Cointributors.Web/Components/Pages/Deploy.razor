@@ -8,7 +8,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Octokit
 @using Cointributors.Web.Client.Pages
-@using Cointributors.Web.Data
+@using Cointributors.Web.Client.Data
 
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
@@ -20,7 +20,7 @@
 
 <p>Deploy your smart contract.</p>
 
-<DeployContract></DeployContract>
+<DeployContract CointributorsData="_cointributorsData"></DeployContract>
 
 @code {
 
@@ -31,6 +31,8 @@
     private HttpContext HttpContext { get; set; } = default!;
 
     private GitHubClient gitHubClient;
+
+    private CointributorsData? _cointributorsData;
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,8 +47,6 @@
 
         var cointributorsBytes = await gitHubClient.Repository.Content.GetRawContent(repository.Owner.Login, repository.Name, "cointributors.json");
 
-        var cointributors = JsonSerializer.Deserialize<CointributorsData>(cointributorsBytes);
-
-        ;
+        _cointributorsData = JsonSerializer.Deserialize<CointributorsData>(cointributorsBytes);
     }
 }
