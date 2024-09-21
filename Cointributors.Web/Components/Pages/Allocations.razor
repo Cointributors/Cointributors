@@ -1,10 +1,12 @@
-﻿@page "/projects/{Id:long}"
+﻿@page "/repositories/{Id:long}"
 
 @attribute [Authorize]
 
+@using System.Text
 @using System.Text.Json
 @using Cointributors.Data
 @using Cointributors.Web.Components.Account
+@using Cointributors.Web.Data
 @using Microsoft.AspNetCore.Authorization
 @using Octokit
 
@@ -12,37 +14,41 @@
 @inject IdentityRedirectManager RedirectManager
 @inject DataContext DataContext
 
-<h1>Allocations</h1>
+<PageTitle>Allocations</PageTitle>
 
+<h1>Allocations</h1>
 
 <p>Choose your users/projects allocations.</p>
 
 
-@if (AllocationForm == null)
+@if (AllocationsForm == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <EditForm Model="AllocationForm" FormName="create-allocations" OnSubmit="@CreateAllocations" method="post">
+    <EditForm Model="AllocationsForm" FormName="create-allocations" OnSubmit="@CreateAllocations" method="post">
         <table class="table">
             <thead>
                 <tr>
-                    <th>User</th>
+                    <th>Destination</th>
+                    <th>Type</th>
                     <th>Allocation</th>
                 </tr>
             </thead>
             <tbody>
-                @for (var i = 0; i < AllocationForm.UserAllocations.Count; i++)
+                @for (var i = 0; i < AllocationsForm.Allocations.Count; i++)
                 {
                     <tr>
-                        <td>@AllocationForm.UserAllocations[i].User</td>
+                        <td>@AllocationsForm.Allocations[i].Destination</td>
+                        <td>@AllocationsForm.Allocations[i].Type</td>
                         <td>
-                            <input name="AllocationForm.UserAllocations[@(i)].User" value="@AllocationForm.UserAllocations[i].User" type="hidden" />
-                            <input name="AllocationForm.UserAllocations[@(i)].HasCointributorsAddress" value="@AllocationForm.UserAllocations[i].HasCointributorsAddress" type="hidden" />
-                            @if (AllocationForm.UserAllocations[i].HasCointributorsAddress)
+                            <input name="AllocationsForm.Allocations[@(i)].Destination" value="@AllocationsForm.Allocations[i].Destination" type="hidden" />
+                            <input name="AllocationsForm.Allocations[@(i)].Type" value="@AllocationsForm.Allocations[i].Type" type="hidden" />
+                            <input name="AllocationsForm.Allocations[@(i)].Address" value="@AllocationsForm.Allocations[i].Address" type="hidden" />
+                            @if (AllocationsForm.Allocations[i].Address != null)
                             {
-                                <input name="AllocationForm.UserAllocations[@(i)].Allocation" value="@AllocationForm.UserAllocations[i].Allocation" />
+                                <input class="form-control" name="AllocationsForm.Allocations[@(i)].Allocation" value="@AllocationsForm.Allocations[i].Allocation" />
                             }
                             else
                             {
@@ -56,29 +62,28 @@ else
 
         <button type="submit" class="btn btn-primary">Create</button>
     </EditForm>
-
 }
 
 
 @code {
-
-    public class UserAllocation
+    public class AllocationData
     {
-        public string User { get; set; }
-        public bool HasCointributorsAddress { get; set; }
+        public string Destination { get; set; }
+        public DestinationType Type { get; set; }
+        public string? Address { get; set; }
         public int Allocation { get; set; }
     }
 
-    public class AllocationData
+    public class AllocationsData
     {
-        public List<UserAllocation> UserAllocations { get; set; }
+        public List<AllocationData> Allocations { get; set; }
     }
 
     [Parameter]
     public long Id { get; set; }
 
     [SupplyParameterFromForm]
-    public AllocationData? AllocationForm { get; set; }
+    public AllocationsData? AllocationsForm { get; set; }
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -94,35 +99,123 @@ else
                 Credentials = new Credentials(accessToken)
             };
 
-        var contributors = await gitHubClient.Repository.Statistics.GetContributors(Id);
 
-        if (AllocationForm == null)
+        if (AllocationsForm == null)
         {
-            var userAllocations = new List<UserAllocation>();
+            var repository = await gitHubClient.Repository.Get(Id);
+
+            var contributors = await gitHubClient.Repository.Statistics.GetContributors(Id);
+
+            var allocations = new List<AllocationData>();
 
             foreach (var contributor in contributors)
             {
                 var gists = await gitHubClient.Gist.GetAllForUser(contributor.Author.Login);
 
-                userAllocations.Add(new UserAllocation
-                    {
-                        User = contributor.Author.Login,
-                        HasCointributorsAddress = gists.FirstOrDefault(g => g.Description == "My Cointributors Address") != null,
-                        Allocation = 0
-                    });
+                var cointributorsGist = gists.FirstOrDefault(g => g.Description == "My Cointributors Address");
+
+                if (cointributorsGist != null)
+                {
+                    cointributorsGist = await gitHubClient.Gist.Get(cointributorsGist.Id);
+
+                    allocations.Add(new AllocationData
+                        {
+                            Destination = contributor.Author.Login,
+                            Type = DestinationType.User,
+                            Address = cointributorsGist.Files.FirstOrDefault().Value.Content,
+                            Allocation = 0
+                        });
+                }
+                else
+                {
+                    allocations.Add(new AllocationData
+                        {
+                            Destination = contributor.Author.Login,
+                            Type = DestinationType.User,
+                            Address = null,
+                            Allocation = 0
+                        });
+                }
             }
 
-            AllocationForm ??= new AllocationData
+            var contents = await gitHubClient.Repository.Content.GetAllContents(Id);
+
+            var requirementsFile = contents.FirstOrDefault(c => c.Name == "requirements.txt");
+
+            if (requirementsFile != null)
+            {
+                var requirementsBytes = await gitHubClient.Repository.Content
+                    .GetRawContent(repository.Owner.Login, repository.Name, requirementsFile.Path);
+
+                using var reader = new StringReader(Encoding.UTF8.GetString(requirementsBytes));
+
+                while (await reader.ReadLineAsync() is { } line)
                 {
-                    UserAllocations = userAllocations
+                    if (!string.IsNullOrWhiteSpace(line) && line.Contains("@ git+"))
+                    {
+                        var lineSplit = line.Split(' ', '@', '/');
+
+                        var dependencyName = lineSplit[0];
+                        var dependencyRepositoryOwner = lineSplit[^3];
+                        var dependencyRepositoryName = lineSplit[^2];
+
+                        var dependencyRepositoryContents = await gitHubClient.Repository.Content.GetAllContents(dependencyRepositoryOwner, dependencyRepositoryName);
+
+                        var dependencyRepositoryCointributorsFile = dependencyRepositoryContents.FirstOrDefault(c => c.Name == "cointributors.json");
+
+                        if (dependencyRepositoryCointributorsFile != null)
+                        {
+                            var dependencyRepositoryCointributorsBytes = await gitHubClient.Repository.Content
+                                .GetRawContent(dependencyRepositoryOwner, dependencyRepositoryName, dependencyRepositoryCointributorsFile.Path);
+
+                            var dependencyRepositoryCointributors = JsonSerializer.Deserialize<CointributorsData>(dependencyRepositoryCointributorsBytes);
+
+                            // TODO: Check the address of the json and use it
+
+                            allocations.Add(new AllocationData
+                                {
+                                    Destination = dependencyName,
+                                    Type = DestinationType.Dependency,
+                                    Address = dependencyRepositoryCointributors.Allocations.FirstOrDefault().Address,
+                                    Allocation = 0
+                                });
+                        }
+                        else
+                        {
+                            allocations.Add(new AllocationData
+                                {
+                                    Destination = dependencyName,
+                                    Type = DestinationType.Dependency,
+                                    Address = null,
+                                    Allocation = 0
+                                });
+                        }
+
+                    }
+                }
+            }
+
+            AllocationsForm ??= new AllocationsData
+                {
+                    Allocations = allocations.OrderBy(a => a.Type).ThenBy(a => a.Destination).ToList()
                 };
         }
     }
 
     private async Task CreateAllocations()
     {
-        await gitHubClient.Repository.Content.CreateFile(Id, "cointributors.json", new CreateFileRequest("Adding Cointributors", JsonSerializer.Serialize(AllocationForm)));
+        await gitHubClient.Repository.Content.CreateFile(Id, "cointributors.json",
+            new CreateFileRequest("Adding Cointributors", JsonSerializer.Serialize(new CointributorsData
+                {
+                    Address = null,
+                    Allocations = AllocationsForm.Allocations.Where(a => a.Allocation > 0).Select(a => new CointributorsAllocationData
+                    {
+                        Address = a.Address,
+                        Type = a.Type,
+                        Allocation = a.Allocation
+                    }).ToList()
+                })));
 
-        RedirectManager.RedirectTo($"projects/{Id}/deploy");
+        RedirectManager.RedirectTo($"repositories/{Id}/deploy");
     }
 }

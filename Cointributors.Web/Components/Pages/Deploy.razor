@@ -1,4 +1,4 @@
-﻿@page "/projects/{Id:long}/deploy"
+﻿@page "/repositories/{Id:long}/deploy"
 
 @attribute [Authorize]
 
@@ -11,6 +11,8 @@
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 @inject DataContext DataContext
+
+<PageTitle>Deployment</PageTitle>
 
 <h1>Deployment</h1>
 

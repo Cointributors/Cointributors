@@ -1,4 +1,4 @@
-﻿@page "/projects"
+﻿@page "/repositories"
 
 @attribute [Authorize]
 
@@ -10,9 +10,11 @@
 @inject IdentityUserAccessor UserAccessor
 @inject DataContext DataContext
 
+<PageTitle>Repositories</PageTitle>
+
 <h1>Repositories</h1>
 
-<p>Select the repositories you are with the best cointributors.</p>
+<p>Select the repository with the best cointributors.</p>
 
 
 @if (repositories == null)
@@ -24,11 +26,8 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-                <th>I</th>
+                <th>Name</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -36,11 +35,8 @@ else
             {
                 <tr>
                     <td>@repository.Name</td>
-                    <td>@repository.Visibility</td>
-                    <td>@repository.FullName</td>
-                    <td>@repository.Url</td>
                     <td>
-                        <a href="/projects/@repository.Id">Select</a>
+                        <a href="/repositories/@repository.Id">Select</a>
                     </td>
                 </tr>
             }
