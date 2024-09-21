@@ -18,15 +18,17 @@
 
     <h1>Add your Cointributors Address</h1>
 
-    @if (hasWorldIdLogin == false)
+    @if (worldId == null)
     {
+        <p>We need to verify you first, ensure you are real...</p>
+
         <form class="form-horizontal" action="Account/Manage/LinkExternalLogin" method="post">
             <div>
                 <AntiforgeryToken />
                 <div class="d-grid">
-                    <button type="submit" class="btn btn-outline-dark" name="Provider" value="WorldId">
-                        <i class="bi bi-github"></i>
-                        Sign in with WorldId
+                    <button type="submit" class="btn btn-light" name="Provider" value="WorldId">
+                        <img src="images/worldid.svg" height="16" />
+                        Sign in with World ID
                     </button>
                 </div>
             </div>
@@ -76,15 +78,15 @@
 
     private GitHubClient gitHubClient;
 
-    private bool? hasWorldIdLogin;
+    private string? worldId;
     private bool addressAllreadyAdded;
     private string cointributorsGistUrl;
 
     protected override async Task OnInitializedAsync()
     {
-        hasWorldIdLogin = await UserAccessor.GetWorldIdLogin(HttpContext);
+        worldId = await UserAccessor.GetWorldId(HttpContext);
 
-        if (hasWorldIdLogin == true)
+        if (worldId != null)
         {
             var accessToken = await UserAccessor.GetGitHubAccessToken(HttpContext);
 
@@ -127,7 +129,8 @@
                 Public = true,
                 Files =
                 {
-                    { "Address", AddressForm!.Address }
+                    { "Address", AddressForm!.Address },
+                    { "WorldId", worldId },
                 }
             });
 

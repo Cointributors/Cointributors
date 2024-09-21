@@ -32,6 +32,10 @@ a, .btn-link {
     color: rgb(104, 134, 242) !important;
 }
 
+.home-page .wbi {
+    margin-top: 5px;
+}
+
 .coin-small .card-with-percentage {
     padding-bottom: 0 !important;
 }

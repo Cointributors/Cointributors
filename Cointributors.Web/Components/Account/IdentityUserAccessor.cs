@@ -19,13 +19,13 @@ internal sealed class IdentityUserAccessor(UserManager<User> userManager, DataCo
         return user;
     }
 
-    public async Task<bool> GetWorldIdLogin(HttpContext context)
+    public async Task<string?> GetWorldId(HttpContext context)
     {
         var userId = userManager.GetUserId(context.User)!;
 
         var worldIdLogin = await dataContext.UserLogins.Where(t => t.UserId == userId && t.LoginProvider == "WorldId").SingleOrDefaultAsync();
 
-        return worldIdLogin != null;
+        return worldIdLogin?.ProviderKey;
     }
 
     public async Task<string> GetGitHubAccessToken(HttpContext context)
