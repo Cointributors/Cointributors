@@ -1,14 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IERC20 {
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
-    function balanceOf(address account) external view returns (uint256);
-}
-
-interface ICointributionSplitter {
-    function donate(uint256 amount, address tokenAddress) external;
-}
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "contracts/ICointributionSplitter.sol";
 
 contract CointributionSplitter {
 
