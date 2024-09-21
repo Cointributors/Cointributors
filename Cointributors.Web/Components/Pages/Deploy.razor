@@ -45,7 +45,8 @@
 
         var cointributorsBytes = await gitHubClient.Repository.Content.GetRawContent(repository.Owner.Login, repository.Name, "cointributors.json");
 
-        var dependencyRepositoryCointributors = JsonSerializer.Deserialize<CointributorsData>(cointributorsBytes);
+        var cointributors = JsonSerializer.Deserialize<CointributorsData>(cointributorsBytes);
 
+        ;
     }
 }
