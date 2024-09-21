@@ -14,9 +14,9 @@
 <AuthorizeView Roles="EthereumConnected">
     <Authorized>
         <div class="d-grid gap-2 mt-3 mb-4 d-md-flex justify-content-md-end">
-            <input @bind="donationAmount" type="number" placeholder="Enter donation amount" class="form-control me-2" style="width: 200px;" />
+            <input @bind="donationAmount" type="number" placeholder="Enter donation amount" class="form-control me-2" />
             
-            <select @bind="selectedTokenAddress" class="form-select me-2" style="width: 200px;">
+            <select @bind="selectedTokenAddress" class="form-select me-2" >
                 @if (tokenList != null)
                 {
                     @foreach (var token in tokenList)
@@ -25,8 +25,19 @@
                     }
                 }
             </select>
-
-            <a @onclick="@Contribute" class="btn btn-dark">Donate</a>
+            
+            @if (donating == false && donated == false)
+            {
+                <a @onclick="@Contribute" class="btn btn-dark">Donate</a>
+            }
+            else if (donating == true && donated == false)
+            {
+                <button class="btn btn-dark" disabled>Donating</button>
+            }
+            else if (donating == true && donated == true)
+            {
+                <button class="btn btn-outline-success" disabled>Donated</button>
+            }
         </div>
 
         @if (!string.IsNullOrEmpty(transactionHash))
@@ -60,6 +71,9 @@
     private string transactionHash;
     private string errorMessage;
 
+    private bool donating;
+    private bool donated;
+
     private class TokenInfo
     {
         public string Symbol { get; set; }
@@ -69,7 +83,7 @@
     private List<TokenInfo> tokenList =
     [
         new TokenInfo { Symbol = "USDC", Address = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" },
-        new TokenInfo { Symbol = "EURC", Address = "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4" }
+    new TokenInfo { Symbol = "EURC", Address = "0x08210F9170F89Ab7658F0B5E3fF39b0E03C594D4" }
     ];
 
     [Parameter]
@@ -143,6 +157,8 @@
             return;
         }
 
+        donating = true;
+
         errorMessage = null;
 
         var web3 = await ethereumHostProvider.GetWeb3Async();
@@ -168,6 +184,8 @@
             if (transactionReceipt.Status.Value == 1) // 1 means success
             {
                 transactionHash = transactionReceipt.TransactionHash;
+
+                donated = true;
             }
             else
             {
