@@ -1,18 +1,62 @@
-﻿@page "/donate/{Address}"
+﻿@page "/repositories/{Id:long}/cointribute/{Address}"
 
+@using System.Text.Json
+@using Cointributors.Web.Client.Data
 @using Cointributors.Web.Client.Pages
+@using Octokit
 
 <PageTitle>Donate</PageTitle>
 
-<div class="container-sm coin-small">
+<div class="container-sm coin-extra-small">
 
-    <h1>Donate</h1>
-    
+    <img src="/images/logo-no-background-side-by-side.png" alt="Cointributors" style="width: 100%">
+
     <Cointribute ContractAddress="@Address"></Cointribute>
+    
+    @if (_cointributorsData != null)
+    {
+        foreach (var allocation in _cointributorsData.Allocations)
+        {
+            <div class="card mb-1">
+                <div class="row g-0">
+                    <div class="col-md-2 border-end">
+                        <img src="@allocation.AvatarUrl" class="img-fluid rounded-start" alt="@allocation.Destination">
+                    </div>
+                    <div class="col-md-10">
+                        <div class="card-body card-with-percentage">
+                            <h5 class="card-title text-truncate">@allocation.Destination</h5>
+                            <p class="card-text card-percentage">
+                                @allocation.Allocation<span>%</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
 
 </div>
+
 @code {
+    [Parameter]
+    public long Id { get; set; }
 
     [Parameter]
     public string Address { get; set; }
+
+    private GitHubClient gitHubClient;
+
+    private string cointributorsSha;
+    private CointributorsData? _cointributorsData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        gitHubClient = new GitHubClient(new ProductHeaderValue("cointributors"));
+
+        var repository = await gitHubClient.Repository.Get(Id);
+
+        var cointributorsBytes = await gitHubClient.Repository.Content.GetRawContent(repository.Owner.Login, repository.Name, "cointributors.json");
+
+        _cointributorsData = JsonSerializer.Deserialize<CointributorsData>(cointributorsBytes);
+    }
 }

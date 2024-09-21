@@ -23,21 +23,57 @@ a, .btn-link {
 .coin-small {
     max-width: 640px;
 }
-.card-with-percentage {
+
+.coin-extra-small {
+    max-width: 420px;
+}
+
+.home-page .bi {
+    color: rgb(104, 134, 242) !important;
+}
+
+.coin-small .card-with-percentage {
     padding-bottom: 0 !important;
 }
 
-.card-body .card-percentage {
+.coin-small .card-body .card-percentage {
     font-size: 2.8rem;
     line-height: 2rem;
     color: rgb(108, 117, 125)
 }
 
-    .card-body .card-percentage span {
+    .coin-small .card-body .card-percentage span {
         font-size: 2.2rem;
         line-height: 2rem;
         color: rgb(137, 144, 151)
     }
+
+
+.coin-extra-small .card-with-percentage {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0 !important;
+}
+
+.coin-extra-small .card-body .card-title {
+    font-size: 1rem;
+}
+
+.coin-extra-small .card-body .card-percentage {
+    font-size: 1.6rem;
+    line-height: 1.3rem;
+    color: rgb(108, 117, 125)
+}
+
+    .coin-extra-small .card-body .card-percentage span {
+        font-size: 1.2rem;
+        line-height: 1.3rem;
+        color: rgb(137, 144, 151)
+    }
+
+.icon-square .bi {
+    margin-top: 2px;
+
+}
 
 .btn-primary {
     color: #fff;

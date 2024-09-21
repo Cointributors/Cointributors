@@ -12,7 +12,7 @@
 
 <AuthorizeView Roles="EthereumConnected">
     <Authorized>
-        <div class="d-grid gap-2 mt-4 d-md-flex justify-content-md-end">
+        <div class="d-grid gap-2 mt-3 mb-4 d-md-flex justify-content-md-end">
             <input @bind="donationAmount" type="number" placeholder="Enter donation amount" class="form-control me-2" style="width: 200px;" />
             
             <select @bind="selectedTokenAddress" class="form-select me-2" style="width: 200px;">
@@ -39,7 +39,7 @@
         }
     </Authorized>
     <NotAuthorized>
-        <div>
+        <div class="mt-2 mb-4">
             Please <span class="fw-bold">connect MetaMask</span> to donate
         </div>
     </NotAuthorized>
